@@ -1,0 +1,24 @@
+<configuration>
+
+  <appender name="STDOUT"
+    class="ch.qos.logback.core.ConsoleAppender">
+    <layout class="ch.qos.logback.classic.PatternLayout">
+      <param name="Pattern"
+        value="TEST %d{HH:mm:ss.SSS} T[%X{TID}] [%thread] %-5level %logger{36} - %msg%n" />
+    </layout>
+  </appender>
+
+  <logger name="org.uranoplums.typical.resource" level="ERROR">
+  </logger>
+
+  <logger name="org.uranoplums.typical.util.time" level="ERROR">
+  </logger>
+
+  <logger name="org.uranoplums.typical.log.AbsUraCodeLogTest" level="DEBUG">
+  </logger>
+
+  <root>
+    <level value="ERROR" />
+    <appender-ref ref="STDOUT" />
+  </root>
+</configuration>

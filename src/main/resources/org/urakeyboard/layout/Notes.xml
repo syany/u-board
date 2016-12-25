@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<fx:root
+  type="javafx.scene.layout.AnchorPane"
+  prefWidth="1240.0" prefHeight="350.0"
+  style="-fx-background-color: #cff;"
+  xmlns:fx="http://javafx.com/fxml">
+  <children>
+  </children>
+</fx:root>
