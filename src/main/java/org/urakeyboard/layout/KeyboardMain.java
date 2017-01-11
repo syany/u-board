@@ -17,10 +17,31 @@
  */
 package org.urakeyboard.layout;
 
+import static org.uranoplums.typical.collection.factory.UraMapFactory.*;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.ConcurrentMap;
+
+import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.input.TouchEvent;
+import javafx.scene.input.TouchPoint;
 import javafx.scene.layout.VBox;
 
+import org.urakeyboard.shape.UraBlackKey;
+import org.urakeyboard.shape.UraKeyboard;
+import org.urakeyboard.shape.UraOnTouchMovedListener;
+import org.urakeyboard.shape.UraOnTouchPressedListener;
+import org.urakeyboard.shape.UraOnTouchReleasedListener;
+import org.urakeyboard.shape.UraWhiteKey;
 import org.urakeyboard.util.UraLayoutUtils;
+import org.uranoplums.typical.collection.factory.UraMapFactory.FACTOR;
+import org.uranoplums.typical.log.UraLoggerFactory;
+import org.uranoplums.typical.log.UraStringCodeLog;
+
 
 
 /**
@@ -29,12 +50,283 @@ import org.urakeyboard.util.UraLayoutUtils;
  * @since 2016/12/19
  * @author syany
  */
-public class KeyboardMain extends VBox {
+public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOnTouchReleasedListener, UraOnTouchPressedListener {
+    /**  */
+    protected static final UraStringCodeLog LOG = UraLoggerFactory.getUraStringCodeLog();
+    /**  */
+    protected final List<UraWhiteKey> whiteKeyList;
+    /**  */
+    protected final List<UraBlackKey> blackKeyList;
+    /** 押下中（発音中）の鍵盤オブジェクトマップ */
+    protected final ConcurrentMap<UraKeyboard, Boolean> noteOnKeyMap = newConcurrentHashMap(10, FACTOR.NONE);
+    /** X座標を元にした鍵盤オブジェクトの並び替えルール（バイナリ検索用） */
+    protected final Comparator<UraKeyboard> xComparator = new Comparator<UraKeyboard>() {
+        @Override
+        public int compare(UraKeyboard source, UraKeyboard target) {
+            double xFirst = source.sceneX();
+            double xLast = xFirst + source.width();
+            if (xFirst > target.sceneX()) {
+                return 1;
+            } else if (xLast <= target.sceneX()) {
+                return -1;
+            }
+            return 0;
+        }
+    };
 
-    public KeyboardMain(Scene scene) {
+    /**
+     * コンストラクタ。
+     * @param scene
+     * @param whiteKeyList
+     * @param blackKeyList
+     */
+    public KeyboardMain(Scene scene, final List<UraWhiteKey> whiteKeyList, final List<UraBlackKey> blackKeyList) {
+        this.whiteKeyList = whiteKeyList;
+        this.blackKeyList = blackKeyList;
         if (scene == null) {
             scene = new Scene(this);
         }
         UraLayoutUtils.layoutLoad(this, scene);
+        Collections.sort(whiteKeyList, xComparator);
+        Collections.sort(blackKeyList, xComparator);
+        this.setOnTouchMoved(touchEvent -> {
+            onTouchMovedListen(touchEvent, this);
+        });
+        this.setOnTouchReleased(touchEvent -> {
+            onTouchReleasedListen(touchEvent, this);
+        });
+        this.setOnTouchPressed(touchEvent -> {
+            onTouchPressedListen(touchEvent, this);
+        });
+    }
+
+    /**
+     * 対象を押下、離した際に実行されるイベントリスナ
+     * @see org.urakeyboard.shape.UraOnTouchMovedListener#onTouchMovedListen(javafx.scene.input.TouchEvent, javafx.scene.Node)
+     */
+    @Override
+    public void onTouchMovedListen(TouchEvent touchEvent, Node node) {
+        try {
+            if (!touchEvent.getEventType().equals(TouchEvent.TOUCH_MOVED)) {
+                // MOVEDイベント以外は処理しない
+                return;
+            }
+            final double touchX = touchEvent.getTouchPoint().getX();
+            final double touchY = touchEvent.getTouchPoint().getY();
+            final UraKeyboard seacher = new UraKeyboard(null).x(touchX);
+            UraKeyboard uraKeyboard = null;
+            // 黒鍵を最優先で位置情報から対象の鍵を取得する
+            int offset = Collections.binarySearch(this.blackKeyList, seacher, xComparator);
+            if (offset < 0) {
+                // 黒鍵でなければ白鍵から探す
+                offset = Collections.binarySearch(this.whiteKeyList, seacher, xComparator);
+                if (offset >= 0) {
+                    uraKeyboard = this.whiteKeyList.get(offset);
+                } else {
+                    // 左端か右端のキーを選択する処理
+                    uraKeyboard = getOutOfRangeWhiteKey(touchX);
+                }
+            } else {
+                uraKeyboard = this.blackKeyList.get(offset);
+                if (touchY > (uraKeyboard.sceneY() + uraKeyboard.height())) {
+                    // 高さが黒鍵の位置でない場合は、白鍵で取得し直す。
+                    offset = Collections.binarySearch(this.whiteKeyList, seacher, xComparator);
+                    if (offset >= 0) {
+                        uraKeyboard = this.whiteKeyList.get(offset);
+                    } else {
+                        // 左端か右端のキーを選択する処理
+                        uraKeyboard = getOutOfRangeWhiteKey(touchX);
+                    }
+                }
+            }
+            if (uraKeyboard == null){
+                return;
+            }
+            final boolean isHover = uraKeyboard.isSceneHover(touchX, touchY);
+            final boolean isNoteOn = uraKeyboard.isNoteOn();
+
+            if (!isNoteOn) {
+                if (isHover) {
+                    LOG.log("DBG Move The event already Hover({}), ({}).", touchEvent, uraKeyboard);
+                    this.noteOn(uraKeyboard);
+                    this.noteOnKeyMap.putIfAbsent(uraKeyboard, Boolean.TRUE);
+                    /*
+                     * 移動直前に押下していた鍵を戻す
+                     */
+                    if (uraKeyboard.isBlackKey()) {
+                        // 黒鍵を押下した場合、黒鍵の隣は必ず白鍵
+                        offset = Collections.binarySearch(this.whiteKeyList, seacher, xComparator);
+                        if (offset >= 0) {
+                            UraKeyboard targetWhiteKey = this.whiteKeyList.get(offset);
+                            if (targetWhiteKey.isNoteOn()) {
+                                this.noteOff(targetWhiteKey);
+                                noteOnKeyMap.remove(targetWhiteKey);
+                            }
+                        }
+                    } else{
+                        // 白鍵を押下した場合、白黒どちらも有りうるので、全押下中の鍵から検索
+                        for (Iterator<UraKeyboard> noteOnIte = noteOnKeyMap.keySet().iterator(); noteOnIte.hasNext();) {
+                            final UraKeyboard noteOnKey = noteOnIte.next();
+                            if (uraKeyboard.equals(noteOnKey)) {
+                                // 押下直後の鍵は無視
+                                continue;
+                            }
+                            boolean isNoteOnKeyHover = false;
+                            for (final TouchPoint subTp : touchEvent.getTouchPoints()) {
+                                if (isNoteOnKeyHover = noteOnKey.isSceneHover(subTp.getX(), subTp.getY())) {
+                                    // 全てのタッチ中のイベントの内、一つでも座標上にあれば、まだ押下中のまま
+                                    break;
+                                }
+                            }
+                            if (isNoteOnKeyHover) {
+                                continue;
+                            }
+                            LOG.log("DBG (SUB Point) Move&Released The event did not Hover({}), ({}).", touchEvent, uraKeyboard);
+                            this.noteOff(noteOnKey);
+                            noteOnIte.remove();
+                        }
+                    }
+                }
+            } else {
+                if (!isHover) {
+                    // 対象座標から外れた場合は音を止め、鍵を戻す
+                    LOG.log("DBG Move&Released The event did not Hover({}), ({}).", touchEvent, uraKeyboard);
+                    this.noteOff(uraKeyboard);
+                    noteOnKeyMap.remove(uraKeyboard);
+                }
+            }
+        } finally {
+            touchEvent.consume();
+        }
+    }
+
+    /* (非 Javadoc)
+     * @see org.urakeyboard.shape.UraOnTouchReleasedListener#onTouchReleasedListen(javafx.scene.input.TouchEvent, javafx.scene.Node)
+     */
+    @Override
+    public void onTouchReleasedListen(TouchEvent touchEvent, Node node) {
+        try {
+            final double touchX = touchEvent.getTouchPoint().getX();
+            final double touchY = touchEvent.getTouchPoint().getY();
+            final UraKeyboard seacher = new UraKeyboard(null).x(touchX);
+            UraKeyboard uraKeyboard = null;
+            // 黒鍵を最優先で位置情報から対象の鍵を取得する
+            int offset = Collections.binarySearch(this.blackKeyList, seacher, xComparator);
+            if (offset < 0) {
+                // 黒鍵でなければ白鍵から探す
+                offset = Collections.binarySearch(this.whiteKeyList, seacher, xComparator);
+                if (offset >= 0) {
+                    uraKeyboard = this.whiteKeyList.get(offset);
+                } else {
+                    // 左端か右端のキーを選択する処理
+                    uraKeyboard = getOutOfRangeWhiteKey(touchX);
+                }
+            } else {
+                uraKeyboard = this.blackKeyList.get(offset);
+                if (touchY > (uraKeyboard.sceneY() + uraKeyboard.height())) {
+                    // 高さが黒鍵の位置でない場合は、白鍵で取得し直す。
+                    offset = Collections.binarySearch(this.whiteKeyList, seacher, xComparator);
+                    if (offset >= 0) {
+                        uraKeyboard = this.whiteKeyList.get(offset);
+                    } else {
+                        // 左端か右端のキーを選択する処理
+                        uraKeyboard = getOutOfRangeWhiteKey(touchX);
+                    }
+                }
+            }
+            if (uraKeyboard == null){
+                return;
+            }
+            final boolean isNoteOn = uraKeyboard.isNoteOn();
+            if (isNoteOn) {
+                LOG.log("DBG Released The event did not Hover({}), ({}).", touchEvent, uraKeyboard);
+                this.noteOff(uraKeyboard);
+                noteOnKeyMap.remove(uraKeyboard);
+            }
+        } finally {
+            touchEvent.consume();
+        }
+    }
+
+    /* (非 Javadoc)
+     * @see org.urakeyboard.shape.UraOnTouchPressedListener#onTouchPressedListen(javafx.scene.input.TouchEvent, javafx.scene.Node)
+     */
+    @Override
+    public void onTouchPressedListen(TouchEvent touchEvent, Node node) {
+        try {
+            final double touchX = touchEvent.getTouchPoint().getX();
+            final double touchY = touchEvent.getTouchPoint().getY();
+            final UraKeyboard seacher = new UraKeyboard(null).x(touchX);
+            UraKeyboard uraKeyboard = null;
+            // 黒鍵を最優先で位置情報から対象の鍵を取得する
+            int offset = Collections.binarySearch(this.blackKeyList, seacher, xComparator);
+            if (offset < 0) {
+                // 黒鍵でなければ白鍵から探す
+                offset = Collections.binarySearch(this.whiteKeyList, seacher, xComparator);
+                if (offset >= 0) {
+                    uraKeyboard = this.whiteKeyList.get(offset);
+                } else {
+                    // どの位置にも該当しない場合は何もせず終了
+                    return;
+                }
+            } else {
+                uraKeyboard = this.blackKeyList.get(offset);
+                if (touchY > (uraKeyboard.sceneY() + uraKeyboard.height())) {
+                    // 高さが黒鍵の位置でない場合は、白鍵で取得し直す。
+                    offset = Collections.binarySearch(this.whiteKeyList, seacher, xComparator);
+                    if (offset >= 0) {
+                        uraKeyboard = this.whiteKeyList.get(offset);
+                    } else {
+                        // どの位置にも該当しない場合は何もせず終了
+                        return;
+                    }
+                }
+            }
+            final boolean isNoteOn = uraKeyboard.isNoteOn();
+            if (!isNoteOn) {
+                LOG.log("DBG Pressed The event already Hover({}), ({}).", touchEvent, uraKeyboard);
+                this.noteOn(uraKeyboard);
+                noteOnKeyMap.putIfAbsent(uraKeyboard, Boolean.TRUE);
+            }
+        } finally {
+            touchEvent.consume();
+        }
+    }
+
+    /**
+     * 対象ポイント（x座標）から端（右端、左端）の白鍵キーオブジェクトを返却する。
+     * @param touchX
+     * @return
+     */
+    protected UraKeyboard getOutOfRangeWhiteKey(final double touchX) {
+        if (this.whiteKeyList.size() <= 0) {
+            // 白鍵がない場合はnullを返却（※あってはいけない）
+            return null;
+        }
+        final UraKeyboard leftWkey = this.whiteKeyList.get(0);
+        if (touchX > leftWkey.sceneX()) {
+            // 鍵オブジェクト群の中にある場合は右端を返却
+            return this.whiteKeyList.get(this.whiteKeyList.size() - 1);
+        }
+        return leftWkey;
+    }
+
+    /**
+     * 対象キーの音を鳴らし、表示を押下中の表示にする。
+     * @param uraKeyboard
+     */
+    protected synchronized void noteOn(UraKeyboard uraKeyboard) {
+        uraKeyboard.uraReceiver().noteOn(uraKeyboard.note());
+        uraKeyboard.noteOn(true);
+        uraKeyboard.noteOnView();
+    }
+    /**
+     * 対象のキーの音を消し、表示を押下していない表示にする。
+     * @param uraKeyboard
+     */
+    protected synchronized void noteOff(UraKeyboard uraKeyboard) {
+        uraKeyboard.uraReceiver().noteOff(uraKeyboard.note());
+        uraKeyboard.noteOn(false);
+        uraKeyboard.noteOffView();
     }
 }

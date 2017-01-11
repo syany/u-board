@@ -31,6 +31,8 @@ public class NoteProgram extends UraDataObject {
     private int chanel;
     /** 音色（プログラム） */
     private int program;
+    /** 音量 */
+    private int velocity= 120;
     /**
      * @param chanel
      */
@@ -48,6 +50,17 @@ public class NoteProgram extends UraDataObject {
     }
 
     /**
+     * @param chanel
+     * @param program
+     * @param velocity
+     */
+    public NoteProgram(int chanel, int program, int velocity) {
+        super();
+        this.chanel = chanel;
+        this.program = program;
+        this.velocity = velocity;
+    }
+    /**
      * @return chanel を返却します
      */
     public final int getChanel() {
@@ -62,10 +75,24 @@ public class NoteProgram extends UraDataObject {
     }
 
     /**
+     * @return velocity を返却します
+     */
+    public final int getVelocity() {
+        return velocity;
+    }
+
+    /**
      * @param program program  を設定します
      */
     public final NoteProgram setProgram(int program) {
         this.program = program;
         return this;
+    }
+
+    /**
+     * @param velocity velocity  を設定します
+     */
+    public final void setVelocity(int velocity) {
+        this.velocity = velocity;
     }
 }

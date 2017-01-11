@@ -17,9 +17,6 @@
  */
 package org.urakeyboard.shape;
 
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.input.TouchEvent;
 import javafx.scene.paint.Paint;
 
 import org.urakeyboard.sound.UraReceiver;
@@ -42,26 +39,27 @@ public class UraBlackKey extends UraKeyboard {
         super(uraReceiver);
         this.styleClassList().add(CSS_KEY_BASE);
         this.styleClassList().add(CSS_KEY_OFF);
+        this.blackKey = true;
     }
     /* (非 Javadoc)
-     * @see org.urakeyboard.shape.UraKeyboard#onTouchReleasedListen(javafx.scene.input.TouchEvent, javafx.scene.Node)
+     * @see org.urakeyboard.shape.UraKeyboard#noteOnView()
      */
     @Override
-    public void onTouchReleasedListen(TouchEvent touchEvent, Node node) {
-        super.onTouchReleasedListen(touchEvent, node);
-        node.getStyleClass().clear();
-        node.getStyleClass().add(UraBlackKey.CSS_KEY_BASE);
-        node.getStyleClass().add(UraBlackKey.CSS_KEY_OFF);
+    public synchronized void noteOnView() {
+        super.noteOnView();
+        this.getStyleClass().clear();
+        this.getStyleClass().add(UraBlackKey.CSS_KEY_BASE);
+        this.getStyleClass().add(UraBlackKey.CSS_KEY_ON);
     }
     /* (非 Javadoc)
-     * @see org.urakeyboard.shape.UraKeyboard#onTouchPressedListen(javafx.scene.input.TouchEvent, javafx.scene.Node)
+     * @see org.urakeyboard.shape.UraKeyboard#noteOffView()
      */
     @Override
-    public void onTouchPressedListen(TouchEvent touchEvent, Node node) {
-        super.onTouchPressedListen(touchEvent, node);
-        node.getStyleClass().clear();
-        node.getStyleClass().add(UraBlackKey.CSS_KEY_BASE);
-        node.getStyleClass().add(UraBlackKey.CSS_KEY_ON);
+    public synchronized void noteOffView() {
+        super.noteOffView();
+        this.getStyleClass().clear();
+        this.getStyleClass().add(UraBlackKey.CSS_KEY_BASE);
+        this.getStyleClass().add(UraBlackKey.CSS_KEY_OFF);
     }
     /* (非 Javadoc)
      * @see org.urakeyboard.shape.UraKeyboard#note(int)
@@ -69,22 +67,6 @@ public class UraBlackKey extends UraKeyboard {
     @Override
     public UraBlackKey note(int note) {
         super.note(note);
-        return this;
-    }
-    /* (非 Javadoc)
-     * @see org.urakeyboard.shape.UraKeyboard#velocity(int)
-     */
-    @Override
-    public UraBlackKey velocity(int velocity) {
-        super.velocity(velocity);
-        return this;
-    }
-    /* (非 Javadoc)
-     * @see org.urakeyboard.shape.UraKeyboard#parentNode(javafx.scene.Parent)
-     */
-    @Override
-    public UraBlackKey parentNode(Parent parentNode) {
-        super.parentNode(parentNode);
         return this;
     }
     /* (非 Javadoc)

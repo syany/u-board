@@ -17,6 +17,14 @@
     />
     <HBox id="KeyArea">
       <children>
+        <Rectangle fx:id="pitchBand"
+           y="0"
+           arcWidth="5.0"
+           arcHeight="5.0"
+           width="100.0"
+           height="350."
+           styleClass="blackKey"
+         />
       </children>
     </HBox>
   </children>

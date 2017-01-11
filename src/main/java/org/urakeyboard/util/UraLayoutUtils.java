@@ -57,7 +57,6 @@ public class UraLayoutUtils extends UraUtils {
                 node.getScene().getStylesheets().add(cssURL.toExternalForm());
             }
         } catch (IOException e) {
-            e.printStackTrace();
             String message = String.format("fxmlファイルのロードに失敗しました。 %s.xml", simpleClassName);
             throw new UraIORuntimeException(message, e);
         }

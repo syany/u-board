@@ -19,6 +19,7 @@ package org.urakeyboard.shape;
 
 import java.util.List;
 
+import javafx.geometry.Point2D;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
@@ -36,6 +37,27 @@ public class UraRectangle extends Rectangle {
      */
     public UraRectangle() {
         super(0, 0, 0, 0);
+    }
+    /**
+     * ローカル座標空間からそのシーンの座標空間に点を変換。
+     * @return
+     */
+    public final Point2D getSceneOffset() {
+        return this.localToScene(0.0d, 0.0d);
+    }
+    /**
+     * シーンの座標空間に点にX座標
+     * @return
+     */
+    public double sceneX() {
+        return this.x() + getSceneOffset().getX();
+    }
+    /**
+     * シーンの座標空間にY座標変換
+     * @return
+     */
+    public double sceneY() {
+        return this.y() + getSceneOffset().getY();
     }
 
     public UraRectangle x(final double x) {

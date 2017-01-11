@@ -17,9 +17,6 @@
  */
 package org.urakeyboard.shape;
 
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.input.TouchEvent;
 import javafx.scene.paint.Paint;
 
 import org.urakeyboard.sound.UraReceiver;
@@ -47,25 +44,25 @@ public class UraWhiteKey extends UraKeyboard {
     }
 
     /* (非 Javadoc)
-     * @see org.urakeyboard.shape.UraKeyboard#onTouchReleasedListen(javafx.scene.input.TouchEvent, javafx.scene.Node)
+     * @see org.urakeyboard.shape.UraKeyboard#noteOnView()
      */
     @Override
-    public void onTouchReleasedListen(TouchEvent touchEvent, Node node) {
-        super.onTouchReleasedListen(touchEvent, node);
-        node.getStyleClass().clear();
-        node.getStyleClass().add(UraWhiteKey.CSS_KEY_BASE);
-        node.getStyleClass().add(UraWhiteKey.CSS_KEY_OFF);
+    public synchronized void noteOnView() {
+        super.noteOnView();
+        this.getStyleClass().clear();
+        this.getStyleClass().add(UraWhiteKey.CSS_KEY_BASE);
+        this.getStyleClass().add(UraWhiteKey.CSS_KEY_ON);
     }
 
     /* (非 Javadoc)
-     * @see org.urakeyboard.shape.UraKeyboard#onTouchPressedListen(javafx.scene.input.TouchEvent, javafx.scene.Node)
+     * @see org.urakeyboard.shape.UraKeyboard#noteOffView()
      */
     @Override
-    public void onTouchPressedListen(TouchEvent touchEvent, Node node) {
-        super.onTouchPressedListen(touchEvent, node);
-        node.getStyleClass().clear();
-        node.getStyleClass().add(UraWhiteKey.CSS_KEY_BASE);
-        node.getStyleClass().add(UraWhiteKey.CSS_KEY_ON);
+    public synchronized void noteOffView() {
+        super.noteOffView();
+        this.getStyleClass().clear();
+        this.getStyleClass().add(UraWhiteKey.CSS_KEY_BASE);
+        this.getStyleClass().add(UraWhiteKey.CSS_KEY_OFF);
     }
 
     /* (非 Javadoc)
@@ -74,22 +71,6 @@ public class UraWhiteKey extends UraKeyboard {
     @Override
     public UraWhiteKey note(int note) {
         super.note(note);
-        return this;
-    }
-    /* (非 Javadoc)
-     * @see org.urakeyboard.shape.UraKeyboard#velocity(int)
-     */
-    @Override
-    public UraWhiteKey velocity(int velocity) {
-        super.velocity(velocity);
-        return this;
-    }
-    /* (非 Javadoc)
-     * @see org.urakeyboard.shape.UraKeyboard#parentNode(javafx.scene.Parent)
-     */
-    @Override
-    public UraWhiteKey parentNode(Parent parentNode) {
-        super.parentNode(parentNode);
         return this;
     }
     /* (非 Javadoc)

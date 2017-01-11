@@ -17,12 +17,11 @@
  */
 package org.urakeyboard.shape;
 
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.input.TouchEvent;
 import javafx.scene.paint.Paint;
 
 import org.urakeyboard.sound.UraReceiver;
+import org.uranoplums.typical.log.UraLoggerFactory;
+import org.uranoplums.typical.log.UraStringCodeLog;
 
 
 /**
@@ -31,30 +30,24 @@ import org.urakeyboard.sound.UraReceiver;
  * @since 2016/12/13
  * @author syany
  */
-public class UraKeyboard extends UraRectangle implements UraOnTouchPressedListener, UraOnTouchReleasedListener {
+public class UraKeyboard extends UraRectangle {
+    /**  */
+    protected static final UraStringCodeLog LOG = UraLoggerFactory.getUraStringCodeLog();
     /** チャネル、楽器情報を含めたレシーバ */
     private UraReceiver uraReceiver;
     /** 音階(C:60) */
     private int note = 60;
-    /** 音量 */
-    private int velocity= 120;
-
-    private Parent parentNode;
-
+    /** 音がなった状態であればtrue */
     private boolean noteOn = false;
+    /** 黒鍵であればtrue */
+    protected boolean blackKey = false;
+
     /**
      * @param uraReceiver チャネル、楽器情報を含めたレシーバ
      */
     public UraKeyboard(final UraReceiver uraReceiver) {
         super();
         this.uraReceiver = uraReceiver;
-        final UraKeyboard self = this;
-        this.setOnTouchPressed(touchEvent -> {
-            this.onTouchPressedListen(touchEvent, self);
-        });
-        this.setOnTouchReleased(touchEvent -> {
-            this.onTouchReleasedListen(touchEvent, self);
-        });
     }
 
     /**
@@ -72,26 +65,18 @@ public class UraKeyboard extends UraRectangle implements UraOnTouchPressedListen
     }
 
     /**
-     * @return velocity を返却します
-     */
-    public final int velocity() {
-        return velocity;
-    }
-
-    /**
-     * @return parentNode を返却します
-     */
-    public final Parent parentNode() {
-        return parentNode;
-    }
-
-    /**
      * @return noteOn を返却します
      */
     public final boolean isNoteOn() {
         return noteOn;
     }
 
+    /**
+     * @return blackKey を返却します
+     */
+    public final boolean isBlackKey() {
+        return blackKey;
+    }
     /**
      * @param uraReceiver uraReceiver  を設定します
      */
@@ -105,22 +90,6 @@ public class UraKeyboard extends UraRectangle implements UraOnTouchPressedListen
      */
     public UraKeyboard note(int note) {
         this.note = note;
-        return this;
-    }
-
-    /**
-     * @param velocity velocity  を設定します
-     */
-    public UraKeyboard velocity(int velocity) {
-        this.velocity = velocity;
-        return this;
-    }
-
-    /**
-     * @param parentNode parentNode  を設定します
-     */
-    public UraKeyboard parentNode(Parent parentNode) {
-        this.parentNode = parentNode;
         return this;
     }
 
@@ -186,34 +155,6 @@ public class UraKeyboard extends UraRectangle implements UraOnTouchPressedListen
         return this;
     }
 
-    @Override
-    public void onTouchReleasedListen(TouchEvent touchEvent, Node node) {
-        try {
-            final UraKeyboard uraKeyboard = UraKeyboard.class.cast(node);
-            if (!uraKeyboard.isNoteOn()) {
-                return;
-            }
-            setNoteOff();
-            uraKeyboard.setPressed(false);
-        } finally {
-            touchEvent.consume();
-        }
-    }
-
-    @Override
-    public void onTouchPressedListen(TouchEvent touchEvent, Node node) {
-        try {
-            final UraKeyboard uraKeyboard = UraKeyboard.class.cast(node);
-            if (node.isPressed() || uraKeyboard.isNoteOn()) {
-                return;
-            }
-            setNoteOn();
-            uraKeyboard.setPressed(true);
-        } finally {
-            touchEvent.consume();
-        }
-    }
-
     /**
      * @param x
      * @param y
@@ -224,17 +165,20 @@ public class UraKeyboard extends UraRectangle implements UraOnTouchPressedListen
                 this.getY() <= y && (this.getY() + this.getHeight()) > y;
     }
     /**
+     * @param x
+     * @param y
+     * @return
      */
-    public synchronized final void setNoteOn() {
-        this.uraReceiver().noteOn(note, velocity);
-        this.noteOn = true;
+    public boolean isSceneHover(final double x, final double y) {
+        return this.sceneX() <= x && (this.sceneX() + this.getWidth()) > x &&
+                this.sceneY() <= y && (this.sceneY() + this.getHeight()) > y;
     }
-
     /**
-     * @param noteOn noteOn  を設定します
+     * 音を鳴らしている際の鍵表示
      */
-    public synchronized final void setNoteOff() {
-        this.uraReceiver().noteOff(note, velocity);
-        this.noteOn = false;
-    }
+    public synchronized void noteOnView() {}
+    /**
+     * 音を止めている際の鍵表示
+     */
+    public synchronized void noteOffView() {}
 }

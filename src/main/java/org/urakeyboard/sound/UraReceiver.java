@@ -79,26 +79,26 @@ public class UraReceiver extends UraSerialDataObject {
         }
     }
 
-    public void noteOn(final int note, final int velocity) {
+    public void noteOn(final int note) {
         try {
             this.shortMessage.setMessage(
                     ShortMessage.NOTE_ON,
                     this.noteProgram.getChanel(),
                     note,
-                    velocity
+                    this.noteProgram.getVelocity()
                     );
             this.receiver.send(this.shortMessage, 0);
         } catch (InvalidMidiDataException e) {
             LOG.log("ERR 意図しないエラーが発生しました。", e);
         }
     }
-    public void noteOff(final int note, final int velocity) {
+    public void noteOff(final int note) {
         try {
             this.shortMessage.setMessage(
                     ShortMessage.NOTE_OFF,
                     this.noteProgram.getChanel(),
                     note,
-                    velocity
+                    this.noteProgram.getVelocity()
                     );
             this.receiver.send(this.shortMessage, 0);
         } catch (InvalidMidiDataException e) {
