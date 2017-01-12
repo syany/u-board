@@ -8,7 +8,7 @@
 <fx:root
   type="javafx.scene.layout.VBox"
   prefWidth="1240.0" prefHeight="400.0"
-  style="-fx-background-color: #fff;"
+  style="-fx-background-color: #ccc;"
   xmlns:fx="http://javafx.com/fxml">
   <children>
     <Label id="commentabel"
@@ -17,14 +17,20 @@
     />
     <HBox id="KeyArea">
       <children>
-        <Rectangle fx:id="pitchBand"
-           y="0"
-           arcWidth="5.0"
-           arcHeight="5.0"
-           width="100.0"
-           height="350."
-           styleClass="blackKey"
-         />
+        <VBox id="optionArea"
+          style="-fx-alignment:center;"
+        >
+          <children>
+            <Rectangle id="pitchBand"
+               y="0"
+               arcWidth="5.0"
+               arcHeight="5.0"
+               width="250.0"
+               height="200.0"
+               styleClass="pitchBand"
+             />
+          </children>
+        </VBox>
       </children>
     </HBox>
   </children>

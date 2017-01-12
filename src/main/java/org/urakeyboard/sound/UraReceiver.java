@@ -55,17 +55,21 @@ public class UraReceiver extends UraSerialDataObject {
     /**
      * @param receiver receiver  を設定します
      */
-    public final void setReceiver(Receiver receiver) {
+    public final UraReceiver setReceiver(Receiver receiver) {
         this.receiver = receiver;
+        return this;
     }
 
     /**
      * @param noteProgram noteProgram  を設定します
      */
-    public final void setNoteProgram(NoteProgram noteProgram) {
+    public final UraReceiver setNoteProgram(NoteProgram noteProgram) {
         this.noteProgram = noteProgram;
+        return this;
     }
-
+    /**
+     * プログラム（音色）設定
+     */
     public void changeProgram() {
         try {
             this.shortMessage.setMessage(
@@ -78,7 +82,10 @@ public class UraReceiver extends UraSerialDataObject {
             LOG.log("ERR 意図しないエラーが発生しました。", e);
         }
     }
-
+    /**
+     * note on
+     * @param note
+     */
     public void noteOn(final int note) {
         try {
             this.shortMessage.setMessage(
@@ -92,6 +99,10 @@ public class UraReceiver extends UraSerialDataObject {
             LOG.log("ERR 意図しないエラーが発生しました。", e);
         }
     }
+    /**
+     * note off
+     * @param note
+     */
     public void noteOff(final int note) {
         try {
             this.shortMessage.setMessage(

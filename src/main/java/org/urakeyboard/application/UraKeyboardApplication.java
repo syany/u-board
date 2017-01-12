@@ -35,20 +35,16 @@ import org.uranoplums.typical.log.UraStringCodeLog;
 
 
 /**
- * UraKeyboardApplicationクラス。<br>
+ * UraKeyboardメインアプリケーションクラス。<br>
  *
  * @since 2016/12/19
  * @author syany
  */
 public final class UraKeyboardApplication extends Application {
-    /**  */
+    /** ロガー */
     protected static final UraStringCodeLog LOG = UraLoggerFactory.getUraStringCodeLog();
-
     /** 選択可能なMIDIデバイスリストや、Receiverを開く */
     final UraMidiDevice midiDevice = new UraMidiDevice();
-//    /** キーボードのキーリスト */
-//    protected final List<UraWhiteKey> whiteKeyList = newArrayList();
-//    protected final List<UraBlackKey> blackKeyList = newArrayList();
     /** レシーバ */
     Receiver receiver;
     /* (非 Javadoc)
@@ -56,20 +52,15 @@ public final class UraKeyboardApplication extends Application {
      */
     @Override
     public void start(Stage stage) throws Exception {
-        // デフォルト定数
+        // シーケンス、シンセサイザのデフォルト取得
         final int SYNTHESIZER_IDX = Integer.parseInt(UraApplicationUtils.APP_RESOURCE.getResourceValue("synthesizerIdx"));
         final int SEQUENCER_IDX = Integer.parseInt(UraApplicationUtils.APP_RESOURCE.getResourceValue("synthesizerIdx"));
 
         // レシーバを開く
         receiver = midiDevice.openReciver(SYNTHESIZER_IDX, SEQUENCER_IDX);
 
-        // 指定の音階分キーボードを作成
-//        keyInit();
-
         // レイアウト設定
         Scene scene = null;
-//        final Notes notes = new Notes(scene, whiteKeyList, blackKeyList);
-//        KeyboardMain keyboardMain = new KeyboardMain(scene, whiteKeyList, blackKeyList);
         final Notes notes = new Notes(scene, midiDevice, receiver);
         KeyboardMain keyboardMain = new KeyboardMain(scene, notes.getWhiteKeyList(), notes.getBlackKeyList());
         for(final Node childNode : keyboardMain.getChildren()) {
@@ -85,38 +76,14 @@ public final class UraKeyboardApplication extends Application {
         stage.show();
     }
 
+    /**
+     * デバッグ用、イベント出力
+     * @param stage
+     */
     protected void setFilter(Stage stage) {
         stage.addEventFilter(EventType.ROOT, e -> System.out.println(e));
     }
 
-//    public void keyInit() {
-//        final int FIRST_NOTE = Integer.valueOf(UraApplicationUtils.APP_RESOURCE.getResourceString("firstNote"));
-//        final int FIRST_COUNT = Integer.valueOf(UraApplicationUtils.APP_RESOURCE.getResourceString("noteCount"));
-//        final int END_NOTE = FIRST_NOTE + FIRST_COUNT;
-//        final double WHITE_KEY_WIDTH = Double.class.cast(UraApplicationUtils.APP_RESOURCE.getResourceMap("whiteKey").get("width"));
-//        final double BLACK_KEY_WIDTH = Double.class.cast(UraApplicationUtils.APP_RESOURCE.getResourceMap("blackKey").get("width"));
-//        final double BLACK_KEY_OFFSET = (WHITE_KEY_WIDTH - BLACK_KEY_WIDTH) / 2;
-//        final double WHITE_KEY_HEIGHT = Double.class.cast(UraApplicationUtils.APP_RESOURCE.getResourceMap("whiteKey").get("height"));
-//        final double BLACK_KEY_HEIGHT = Double.class.cast(UraApplicationUtils.APP_RESOURCE.getResourceMap("blackKey").get("height"));
-//
-//        // 指定の音階分キーボードを作成
-//        for (int note = FIRST_NOTE, wIdx = 0; note < END_NOTE; note++) {
-//            final UraReceiver uraReceiver = midiDevice.createUraReceiver(receiver, 0);
-//            if (UraKeyboardUtils.isBlack(note)) {
-//                final double w = (wIdx - 1) * WHITE_KEY_WIDTH;
-//                final double x = (w + WHITE_KEY_WIDTH / 2) + BLACK_KEY_OFFSET;
-//                UraBlackKey blackKey = new UraBlackKey(uraReceiver)
-//                .x(x).y(0).width(BLACK_KEY_WIDTH).height(BLACK_KEY_HEIGHT).note(note);
-//                blackKeyList.add(blackKey);
-//            } else {
-//                final double x = wIdx * WHITE_KEY_WIDTH;
-//                final UraWhiteKey whiteKey = new UraWhiteKey(uraReceiver)
-//                    .x(x).y(0).width(WHITE_KEY_WIDTH).height(WHITE_KEY_HEIGHT).note(note);
-//                whiteKeyList.add(whiteKey);
-//                wIdx++;
-//            }
-//        }
-//    }
     /**
      * @param args
      */

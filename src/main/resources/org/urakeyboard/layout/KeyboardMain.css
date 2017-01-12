@@ -34,6 +34,16 @@
     -fx-fill: linear-gradient(from 0% 0% to 0% 100%, white, white 98%, dimgray 98.5%, white 99%, black 100%);
 }
 
+.pitchBand {
+    -fx-stroke: linear-gradient(from 100% 100% to 0% 0%, #afbdc0, #6d7673 50%, #0a0f0b 51%, #0a0809 100%);
+    -fx-stroke-width: 3px;
+    -fx-stroke-line-cap: butt;
+    -fx-stroke-line-join: bevel;
+    -fx-arc-width: 3;
+    -fx-arc-height: 3;
+    -fx-fill: linear-gradient(from 0% 0% to 100% 100%, #4375a8, #244386 98%);
+}
+
 AnchorPane {
-    -fx-background-color: #ccc;
+    -fx-background-color: #999;
 }

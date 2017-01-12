@@ -4,12 +4,12 @@
   sequencerIdx: "0",
   defaultProgram: "80",
   defaultProgramList: [
-                       "80",
+                       "81",
                        "80"
                        ],
   defaultChanelNumber: "10",
-  firstNote: "53",
-  noteCount: "29",
+  firstNote: "57",
+  noteCount: "28",
   blackKey: {
     width: 50,
     height: 200

@@ -38,55 +38,35 @@ import org.urakeyboard.util.UraLayoutUtils;
 
 
 /**
- * 動的キーレイアウトクラス。<br>
+ * 動的鍵群レイアウトクラス。<br>
  *
  * @since 2016/12/20
  * @author syany
  */
 public class Notes extends AnchorPane {
-
-//    protected final List<UraKeyboard> keyboardList = newArrayList();
-//
-//    /** 選択可能なMIDIデバイスリストや、Receiverを開く */
-//    final UraMidiDevice midiDevice = new UraMidiDevice();
-    /** キーボードのキーリスト */
+    /** 白鍵リスト */
     protected final List<UraWhiteKey> whiteKeyList = newArrayList();
+    /** 黒鍵リスト */
     protected final List<UraBlackKey> blackKeyList = newArrayList();
-    /** レシーバ */
-//    Receiver receiver;
     /**
-     * コンストラクタ
+     * コンストラクタ。
+     * @param scene シーン
+     * @param midiDevice オリジナルMIDIデバイス管理オブジェクト
+     * @param receiver レシーバ
      */
-    public Notes(Scene scene, final List<UraWhiteKey> whiteKeyList, final List<UraBlackKey> blackKeyList) {
-        if (scene == null) {
-            scene = new Scene(this);
-        }
-        UraLayoutUtils.layoutLoad(this, scene);
-        init(whiteKeyList, blackKeyList);
-    }
-
     public Notes(Scene scene, final UraMidiDevice midiDevice, final Receiver receiver) {
         if (scene == null) {
             scene = new Scene(this);
         }
         UraLayoutUtils.layoutLoad(this, scene);
-//        init(whiteKeyList, blackKeyList);
-        keyInit(midiDevice, receiver);
+        init(midiDevice, receiver);
     }
-
-    protected void init(final List<UraWhiteKey> whiteKeyList, final List<UraBlackKey> blackKeyList) {
-        // add child keyboard shape
-        ObservableList<Node> nodes = this.getChildren();
-        for (final UraWhiteKey wKey : whiteKeyList) {
-            nodes.add(wKey);
-        }
-
-        for (final UraBlackKey bKey : blackKeyList) {
-            nodes.add(bKey);
-        }
-    }
-
-    public void keyInit(final UraMidiDevice midiDevice, final Receiver receiver) {
+    /**
+     * 鍵盤の初期化。位置、幅のデフォルトを取得し子ノードへ追加する。
+     * @param midiDevice
+     * @param receiver
+     */
+    public void init(final UraMidiDevice midiDevice, final Receiver receiver) {
         final int FIRST_NOTE = Integer.valueOf(UraApplicationUtils.APP_RESOURCE.getResourceString("firstNote"));
         final int FIRST_COUNT = Integer.valueOf(UraApplicationUtils.APP_RESOURCE.getResourceString("noteCount"));
         final int END_NOTE = FIRST_NOTE + FIRST_COUNT;
@@ -125,7 +105,6 @@ public class Notes extends AnchorPane {
         }
     }
 
-
     /**
      * @return whiteKeyList を返却します
      */
@@ -133,13 +112,10 @@ public class Notes extends AnchorPane {
         return whiteKeyList;
     }
 
-
-
     /**
      * @return blackKeyList を返却します
      */
     public final List<UraBlackKey> getBlackKeyList() {
         return blackKeyList;
     }
-
 }
