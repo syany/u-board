@@ -244,6 +244,8 @@ public class UraMidiDevice extends UraSerialDataObject {
      */
     public UraReceiver createUraReceiver(final Receiver receiver, final int chanelIndex) {
         final NoteProgram noteProgram = this.noteProgramList.get(chanelIndex);
-        return new UraReceiver(receiver, noteProgram);
+        UraReceiver uraReceiver = new UraReceiver(receiver, noteProgram);
+        uraReceiver.changeProgram();
+        return uraReceiver;
     }
 }

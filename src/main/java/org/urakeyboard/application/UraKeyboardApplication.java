@@ -19,17 +19,10 @@ package org.urakeyboard.application;
 
 import javafx.application.Application;
 import javafx.event.EventType;
-import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
-import javax.sound.midi.Receiver;
-
 import org.urakeyboard.layout.KeyboardMain;
-import org.urakeyboard.layout.Notes;
-import org.urakeyboard.sound.UraMidiDevice;
-import org.urakeyboard.util.UraApplicationUtils;
 import org.uranoplums.typical.log.UraLoggerFactory;
 import org.uranoplums.typical.log.UraStringCodeLog;
 
@@ -43,32 +36,14 @@ import org.uranoplums.typical.log.UraStringCodeLog;
 public final class UraKeyboardApplication extends Application {
     /** ロガー */
     protected static final UraStringCodeLog LOG = UraLoggerFactory.getUraStringCodeLog();
-    /** 選択可能なMIDIデバイスリストや、Receiverを開く */
-    final UraMidiDevice midiDevice = new UraMidiDevice();
-    /** レシーバ */
-    Receiver receiver;
     /* (非 Javadoc)
      * @see javafx.application.Application#start(javafx.stage.Stage)
      */
     @Override
     public void start(Stage stage) throws Exception {
-        // シーケンス、シンセサイザのデフォルト取得
-        final int SYNTHESIZER_IDX = Integer.parseInt(UraApplicationUtils.APP_RESOURCE.getResourceValue("synthesizerIdx"));
-        final int SEQUENCER_IDX = Integer.parseInt(UraApplicationUtils.APP_RESOURCE.getResourceValue("synthesizerIdx"));
-
-        // レシーバを開く
-        receiver = midiDevice.openReciver(SYNTHESIZER_IDX, SEQUENCER_IDX);
-
         // レイアウト設定
         Scene scene = null;
-        final Notes notes = new Notes(scene, midiDevice, receiver);
-        KeyboardMain keyboardMain = new KeyboardMain(scene, notes.getWhiteKeyList(), notes.getBlackKeyList());
-        for(final Node childNode : keyboardMain.getChildren()) {
-            if ("KeyArea".equals(childNode.getId())) {
-                ((HBox) childNode).getChildren().add(notes);
-                LOG.log("TRC note point(x:{}, y:{})", notes.getLayoutX(), notes.getLayoutY());
-            }
-        }
+        KeyboardMain keyboardMain = new KeyboardMain(scene);
 
         // 対象シーンの表示
         stage.setScene(keyboardMain.getScene());

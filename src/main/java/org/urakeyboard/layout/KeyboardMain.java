@@ -29,7 +29,10 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.input.TouchEvent;
 import javafx.scene.input.TouchPoint;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+
+import javax.sound.midi.Receiver;
 
 import org.urakeyboard.shape.UraBlackKey;
 import org.urakeyboard.shape.UraKeyboard;
@@ -37,6 +40,8 @@ import org.urakeyboard.shape.UraOnTouchMovedListener;
 import org.urakeyboard.shape.UraOnTouchPressedListener;
 import org.urakeyboard.shape.UraOnTouchReleasedListener;
 import org.urakeyboard.shape.UraWhiteKey;
+import org.urakeyboard.sound.UraMidiDevice;
+import org.urakeyboard.util.UraApplicationUtils;
 import org.urakeyboard.util.UraLayoutUtils;
 import org.uranoplums.typical.collection.factory.UraMapFactory.FACTOR;
 import org.uranoplums.typical.log.UraLoggerFactory;
@@ -53,6 +58,8 @@ import org.uranoplums.typical.log.UraStringCodeLog;
 public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOnTouchReleasedListener, UraOnTouchPressedListener {
     /**  */
     protected static final UraStringCodeLog LOG = UraLoggerFactory.getUraStringCodeLog();
+    /** 選択可能なMIDIデバイスリストや、Receiverを開く */
+    final UraMidiDevice midiDevice = new UraMidiDevice();
     /**  */
     protected final List<UraWhiteKey> whiteKeyList;
     /**  */
@@ -73,22 +80,30 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
             return 0;
         }
     };
-
     /**
-     * コンストラクタ。
+     * コンストラクタ
      * @param scene
-     * @param whiteKeyList
-     * @param blackKeyList
      */
-    public KeyboardMain(Scene scene, final List<UraWhiteKey> whiteKeyList, final List<UraBlackKey> blackKeyList) {
-        this.whiteKeyList = whiteKeyList;
-        this.blackKeyList = blackKeyList;
+    public KeyboardMain(Scene scene) {
         if (scene == null) {
             scene = new Scene(this);
         }
         UraLayoutUtils.layoutLoad(this, scene);
+
+        // シーケンス、シンセサイザのデフォルト取得
+        final int SYNTHESIZER_IDX = Integer.parseInt(UraApplicationUtils.APP_RESOURCE.getResourceValue("synthesizerIdx"));
+        final int SEQUENCER_IDX = Integer.parseInt(UraApplicationUtils.APP_RESOURCE.getResourceValue("synthesizerIdx"));
+
+        // レシーバを開く
+        final Receiver receiver = midiDevice.openReciver(SYNTHESIZER_IDX, SEQUENCER_IDX);
+
+        final Notes notes = new Notes(scene, midiDevice, receiver);
+        this.whiteKeyList = notes.getWhiteKeyList();
+        this.blackKeyList = notes.getBlackKeyList();
         Collections.sort(whiteKeyList, xComparator);
         Collections.sort(blackKeyList, xComparator);
+        this.initLayout(notes);
+
         this.setOnTouchMoved(touchEvent -> {
             onTouchMovedListen(touchEvent, this);
         });
@@ -98,6 +113,18 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
         this.setOnTouchPressed(touchEvent -> {
             onTouchPressedListen(touchEvent, this);
         });
+    }
+    /**
+     * @param notes
+     */
+    protected void initLayout(final Notes notes) {
+        for(final Node childNode : this.getChildren()) {
+            if ("KeyArea".equals(childNode.getId())) {
+                ((HBox) childNode).getChildren().add(notes);
+                LOG.log("TRC note point(x:{}, y:{})", notes.getLayoutX(), notes.getLayoutY());
+            }
+        }
+
     }
 
     /**
@@ -111,25 +138,21 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
                 // MOVEDイベント以外は処理しない
                 return;
             }
+            double blackKeyBorder = 0.0D;
+            if (this.blackKeyList.size() > 0) {
+                final UraKeyboard bk = this.blackKeyList.get(0);
+                blackKeyBorder = bk.sceneY() + bk.height();
+            }
             final double touchX = touchEvent.getTouchPoint().getX();
             final double touchY = touchEvent.getTouchPoint().getY();
             final UraKeyboard seacher = new UraKeyboard(null).x(touchX);
             UraKeyboard uraKeyboard = null;
-            // 黒鍵を最優先で位置情報から対象の鍵を取得する
-            int offset = Collections.binarySearch(this.blackKeyList, seacher, xComparator);
-            if (offset < 0) {
-                // 黒鍵でなければ白鍵から探す
-                offset = Collections.binarySearch(this.whiteKeyList, seacher, xComparator);
-                if (offset >= 0) {
-                    uraKeyboard = this.whiteKeyList.get(offset);
-                } else {
-                    // 左端か右端のキーを選択する処理
-                    uraKeyboard = getOutOfRangeWhiteKey(touchX);
-                }
-            } else {
-                uraKeyboard = this.blackKeyList.get(offset);
-                if (touchY > (uraKeyboard.sceneY() + uraKeyboard.height())) {
-                    // 高さが黒鍵の位置でない場合は、白鍵で取得し直す。
+
+            if (touchY <= blackKeyBorder) {
+                // 黒鍵を最優先で位置情報から対象の鍵を取得する
+                int offset = Collections.binarySearch(this.blackKeyList, seacher, xComparator);
+                if (offset < 0) {
+                    // 黒鍵でなければ白鍵から探す
                     offset = Collections.binarySearch(this.whiteKeyList, seacher, xComparator);
                     if (offset >= 0) {
                         uraKeyboard = this.whiteKeyList.get(offset);
@@ -137,6 +160,17 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
                         // 左端か右端のキーを選択する処理
                         uraKeyboard = getOutOfRangeWhiteKey(touchX);
                     }
+                } else {
+                    uraKeyboard = this.blackKeyList.get(offset);
+                }
+            } else {
+                // 高さが黒鍵の位置でない場合は、白鍵で取得し直す。
+                int offset = Collections.binarySearch(this.whiteKeyList, seacher, xComparator);
+                if (offset >= 0) {
+                    uraKeyboard = this.whiteKeyList.get(offset);
+                } else {
+                    // 左端か右端のキーを選択する処理
+                    uraKeyboard = getOutOfRangeWhiteKey(touchX);
                 }
             }
             if (uraKeyboard == null){
@@ -149,13 +183,13 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
                 if (isHover) {
                     LOG.log("DBG Move The event already Hover({}), ({}).", touchEvent, uraKeyboard);
                     this.noteOn(uraKeyboard);
-                    this.noteOnKeyMap.putIfAbsent(uraKeyboard, Boolean.TRUE);
+                    noteOnKeyMap.putIfAbsent(uraKeyboard, Boolean.TRUE);
                     /*
                      * 移動直前に押下していた鍵を戻す
                      */
                     if (uraKeyboard.isBlackKey()) {
                         // 黒鍵を押下した場合、黒鍵の隣は必ず白鍵
-                        offset = Collections.binarySearch(this.whiteKeyList, seacher, xComparator);
+                        int offset = Collections.binarySearch(this.whiteKeyList, seacher, xComparator);
                         if (offset >= 0) {
                             UraKeyboard targetWhiteKey = this.whiteKeyList.get(offset);
                             if (targetWhiteKey.isNoteOn()) {
@@ -172,10 +206,30 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
                                 continue;
                             }
                             boolean isNoteOnKeyHover = false;
-                            for (final TouchPoint subTp : touchEvent.getTouchPoints()) {
-                                if (isNoteOnKeyHover = noteOnKey.isSceneHover(subTp.getX(), subTp.getY())) {
-                                    // 全てのタッチ中のイベントの内、一つでも座標上にあれば、まだ押下中のまま
-                                    break;
+                            if (noteOnKey.isBlackKey()) {
+                                // 黒
+                                for (final TouchPoint subTp : touchEvent.getTouchPoints()) {
+                                    if (isNoteOnKeyHover = noteOnKey.isSceneHover(subTp.getX(), subTp.getY())) {
+                                        // 全てのタッチ中のイベントの内、一つでも座標上にあれば、まだ押下中のまま
+                                        break;
+                                    }
+                                }
+                            } else {
+                                // 白
+                                for (final TouchPoint subTp : touchEvent.getTouchPoints()) {
+                                    final UraKeyboard subSeacher = new UraKeyboard(null).x(subTp.getX());
+                                    if (subTp.getY() <= blackKeyBorder) {
+                                        // 自身が白鍵であるのに対し黒鍵の上のポイントであるならばタッチ範囲ではない（Note off対象）
+                                        int subOffset = Collections.binarySearch(this.blackKeyList, subSeacher, xComparator);
+                                        if (subOffset > 0) {
+                                            LOG.log("TRC This Point hover Black key!!");
+                                            continue;
+                                        }
+                                    }
+                                    if (isNoteOnKeyHover = noteOnKey.isSceneHover(subTp.getX(), subTp.getY())) {
+                                        // 全てのタッチ中のイベントの内、一つでも座標上にあれば、まだ押下中のまま
+                                        break;
+                                    }
                                 }
                             }
                             if (isNoteOnKeyHover) {
@@ -206,25 +260,20 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
     @Override
     public void onTouchReleasedListen(TouchEvent touchEvent, Node node) {
         try {
+            double blackKeyBorder = 0.0D;
+            if (this.blackKeyList.size() > 0) {
+                final UraKeyboard bk = this.blackKeyList.get(0);
+                blackKeyBorder = bk.sceneY() + bk.height();
+            }
             final double touchX = touchEvent.getTouchPoint().getX();
             final double touchY = touchEvent.getTouchPoint().getY();
             final UraKeyboard seacher = new UraKeyboard(null).x(touchX);
             UraKeyboard uraKeyboard = null;
-            // 黒鍵を最優先で位置情報から対象の鍵を取得する
-            int offset = Collections.binarySearch(this.blackKeyList, seacher, xComparator);
-            if (offset < 0) {
-                // 黒鍵でなければ白鍵から探す
-                offset = Collections.binarySearch(this.whiteKeyList, seacher, xComparator);
-                if (offset >= 0) {
-                    uraKeyboard = this.whiteKeyList.get(offset);
-                } else {
-                    // 左端か右端のキーを選択する処理
-                    uraKeyboard = getOutOfRangeWhiteKey(touchX);
-                }
-            } else {
-                uraKeyboard = this.blackKeyList.get(offset);
-                if (touchY > (uraKeyboard.sceneY() + uraKeyboard.height())) {
-                    // 高さが黒鍵の位置でない場合は、白鍵で取得し直す。
+            if (touchY <= blackKeyBorder) {
+                // 黒鍵を最優先で位置情報から対象の鍵を取得する
+                int offset = Collections.binarySearch(this.blackKeyList, seacher, xComparator);
+                if (offset < 0) {
+                    // 黒鍵でなければ白鍵から探す
                     offset = Collections.binarySearch(this.whiteKeyList, seacher, xComparator);
                     if (offset >= 0) {
                         uraKeyboard = this.whiteKeyList.get(offset);
@@ -232,6 +281,17 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
                         // 左端か右端のキーを選択する処理
                         uraKeyboard = getOutOfRangeWhiteKey(touchX);
                     }
+                } else {
+                    uraKeyboard = this.blackKeyList.get(offset);
+                }
+            } else {
+                // 高さが黒鍵の位置でない場合は、白鍵で取得し直す。
+                int offset = Collections.binarySearch(this.whiteKeyList, seacher, xComparator);
+                if (offset >= 0) {
+                    uraKeyboard = this.whiteKeyList.get(offset);
+                } else {
+                    // 左端か右端のキーを選択する処理
+                    uraKeyboard = getOutOfRangeWhiteKey(touchX);
                 }
             }
             if (uraKeyboard == null){
@@ -254,25 +314,21 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
     @Override
     public void onTouchPressedListen(TouchEvent touchEvent, Node node) {
         try {
+            double blackKeyBorder = 0.0D;
+            if (this.blackKeyList.size() > 0) {
+                final UraKeyboard bk = this.blackKeyList.get(0);
+                blackKeyBorder = bk.sceneY() + bk.height();
+            }
             final double touchX = touchEvent.getTouchPoint().getX();
             final double touchY = touchEvent.getTouchPoint().getY();
             final UraKeyboard seacher = new UraKeyboard(null).x(touchX);
             UraKeyboard uraKeyboard = null;
-            // 黒鍵を最優先で位置情報から対象の鍵を取得する
-            int offset = Collections.binarySearch(this.blackKeyList, seacher, xComparator);
-            if (offset < 0) {
-                // 黒鍵でなければ白鍵から探す
-                offset = Collections.binarySearch(this.whiteKeyList, seacher, xComparator);
-                if (offset >= 0) {
-                    uraKeyboard = this.whiteKeyList.get(offset);
-                } else {
-                    // どの位置にも該当しない場合は何もせず終了
-                    return;
-                }
-            } else {
-                uraKeyboard = this.blackKeyList.get(offset);
-                if (touchY > (uraKeyboard.sceneY() + uraKeyboard.height())) {
-                    // 高さが黒鍵の位置でない場合は、白鍵で取得し直す。
+
+            if (touchY <= blackKeyBorder) {
+                // 黒鍵を最優先で位置情報から対象の鍵を取得する
+                int offset = Collections.binarySearch(this.blackKeyList, seacher, xComparator);
+                if (offset < 0) {
+                    // 黒鍵でなければ白鍵から探す
                     offset = Collections.binarySearch(this.whiteKeyList, seacher, xComparator);
                     if (offset >= 0) {
                         uraKeyboard = this.whiteKeyList.get(offset);
@@ -280,6 +336,17 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
                         // どの位置にも該当しない場合は何もせず終了
                         return;
                     }
+                } else {
+                    uraKeyboard = this.blackKeyList.get(offset);
+                }
+            } else {
+                // 高さが黒鍵の位置でない場合は、白鍵で取得し直す。
+                int offset = Collections.binarySearch(this.whiteKeyList, seacher, xComparator);
+                if (offset >= 0) {
+                    uraKeyboard = this.whiteKeyList.get(offset);
+                } else {
+                  // どの位置にも該当しない場合は何もせず終了
+                  return;
                 }
             }
             final boolean isNoteOn = uraKeyboard.isNoteOn();
