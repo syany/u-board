@@ -63,21 +63,6 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
     protected final List<UraBlackKey> blackKeyList;
     /** 押下中（発音中）の鍵盤オブジェクトマップ */
     protected final ConcurrentMap<Integer, UraKeyboard> noteOnKeyCacheMap = newConcurrentHashMap(10, FACTOR.NONE);
-//    /** X座標を元にした鍵盤オブジェクトの並び替えルール（バイナリ検索用） */
-//    protected final Comparator<UraKeyboard> xComparator = new Comparator<UraKeyboard>() {
-//
-//        @Override
-//        public int compare(UraKeyboard source, UraKeyboard target) {
-//            double xFirst = source.sceneX();
-//            double xLast = xFirst + source.width();
-//            if (xFirst > target.sceneX()) {
-//                return 1;
-//            } else if (xLast <= target.sceneX()) {
-//                return -1;
-//            }
-//            return 0;
-//        }
-//    };
 
     /**
      * コンストラクタ
@@ -95,10 +80,7 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
         final Receiver receiver = midiDevice.openReciver(SYNTHESIZER_IDX, SEQUENCER_IDX);
         final Notes notes = new Notes(scene, midiDevice, receiver);
         this.whiteKeyList = notes.getWhiteKeyList();
-        this.blackKeyList = notes.getBlackKeyList();
-//        Collections.sort(whiteKeyList, xComparator);
-//        Collections.sort(blackKeyList, xComparator);
-        this.initLayout(notes);
+        this.blackKeyList = notes.getBlackKeyList();        this.initLayout(notes);
         this.setOnTouchMoved(touchEvent -> {
             onTouchMovedListen(touchEvent, this);
         });
@@ -313,24 +295,6 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
             }
         }
     }
-
-//    /**
-//     * 対象ポイント（x座標）から端（右端、左端）の白鍵キーオブジェクトを返却する。
-//     * @param touchX
-//     * @return
-//     */
-//    protected UraKeyboard getOutOfRangeWhiteKey(final double touchX) {
-//        if (this.whiteKeyList.size() <= 0) {
-//            // 白鍵がない場合はnullを返却（※あってはいけない）
-//            return null;
-//        }
-//        final UraKeyboard leftWkey = this.whiteKeyList.get(0);
-//        if (touchX > leftWkey.sceneX()) {
-//            // 鍵オブジェクト群の中にある場合は右端を返却
-//            return this.whiteKeyList.get(this.whiteKeyList.size() - 1);
-//        }
-//        return leftWkey;
-//    }
 
     /**
      * 対象の鍵を鳴らしていない場合は、鳴らしてキャッシュに入れる。
