@@ -20,15 +20,15 @@
         <VBox id="optionArea"
           style="-fx-alignment:center;"
         >
-          <children>
-            <Rectangle id="pitchBand"
+          <children><!--
+            <Rectangle id="pitchBend"
                y="0"
                arcWidth="5.0"
                arcHeight="5.0"
                width="250.0"
                height="200.0"
-               styleClass="pitchBand"
-             />
+               styleClass="pitchBend"
+             /> -->
           </children>
         </VBox>
       </children>

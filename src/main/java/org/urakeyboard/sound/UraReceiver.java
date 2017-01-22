@@ -116,4 +116,57 @@ public class UraReceiver extends UraSerialDataObject {
             LOG.log("ERR 意図しないエラーが発生しました。", e);
         }
     }
+    /**
+     * 音階
+     */
+    public void pitchBend(final int pitch) {
+        try {
+            int data2 = 0x40 + pitch;
+            data2 = Math.min(0x7f, data2);
+            data2 = Math.max(0, data2);
+            this.shortMessage.setMessage(
+                    ShortMessage.PITCH_BEND,
+                    this.noteProgram.getChanel(),
+                    0,
+                    data2);
+            this.receiver.send(this.shortMessage, 0);
+        } catch (InvalidMidiDataException e) {
+            LOG.log("ERR 意図しないエラーが発生しました。", e);
+        }
+    }
+//    /**
+//     * 音階All
+//     */
+//    public void pichBendAllChanel(final int pitch) {
+//        try {
+//            for (int chanel = 0; chanel < 16; chanel++) {
+//                this.shortMessage.setMessage(
+//                        ShortMessage.PITCH_BEND,
+//                        chanel,
+//                        0,
+//                        pitch);
+//                this.receiver.send(this.shortMessage, 0);
+//            }
+//        } catch (InvalidMidiDataException e) {
+//            LOG.log("ERR 意図しないエラーが発生しました。", e);
+//        }
+//    }
+    /**
+     * モジュレーション
+     */
+    public void modulation(final int pitch) {
+        try {
+            int data2 = pitch;
+            data2 = Math.min(0x7f, data2);
+            data2 = Math.max(0, data2);
+            this.shortMessage.setMessage(
+                    ShortMessage.CONTROL_CHANGE,
+                    this.noteProgram.getChanel(),
+                    1,
+                    data2);
+            this.receiver.send(this.shortMessage, 0);
+        } catch (InvalidMidiDataException e) {
+            LOG.log("ERR 意図しないエラーが発生しました。", e);
+        }
+    }
 }

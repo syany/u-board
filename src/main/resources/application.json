@@ -17,5 +17,10 @@
   whiteKey: {
     width: 80,
     height: 350
+  },
+  pitchBendArea: {
+    css: "pitchBend",
+    width: 250,
+    height: 200
   }
 }

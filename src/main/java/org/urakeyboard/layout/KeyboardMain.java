@@ -37,6 +37,7 @@ import org.urakeyboard.shape.UraKeyboard;
 import org.urakeyboard.shape.UraOnTouchMovedListener;
 import org.urakeyboard.shape.UraOnTouchPressedListener;
 import org.urakeyboard.shape.UraOnTouchReleasedListener;
+import org.urakeyboard.shape.UraPitchBendRibon;
 import org.urakeyboard.shape.UraWhiteKey;
 import org.urakeyboard.sound.UraMidiDevice;
 import org.urakeyboard.util.UraApplicationUtils;
@@ -61,6 +62,8 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
     protected final List<UraWhiteKey> whiteKeyList;
     /**  */
     protected final List<UraBlackKey> blackKeyList;
+    /**  */
+    protected final UraPitchBendRibon pitchBandRibon;
     /** 押下中（発音中）の鍵盤オブジェクトマップ */
     protected final ConcurrentMap<Integer, UraKeyboard> noteOnKeyCacheMap = newConcurrentHashMap(10, FACTOR.NONE);
 
@@ -80,7 +83,15 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
         final Receiver receiver = midiDevice.openReciver(SYNTHESIZER_IDX, SEQUENCER_IDX);
         final Notes notes = new Notes(scene, midiDevice, receiver);
         this.whiteKeyList = notes.getWhiteKeyList();
-        this.blackKeyList = notes.getBlackKeyList();        this.initLayout(notes);
+        this.blackKeyList = notes.getBlackKeyList();
+
+        final double PITCH_B_WIDTH = Double.class.cast(UraApplicationUtils.APP_RESOURCE.getResourceMap("pitchBendArea").get("width"));
+        final double PITCH_B_HEIGHT = Double.class.cast(UraApplicationUtils.APP_RESOURCE.getResourceMap("pitchBendArea").get("height"));
+        pitchBandRibon = new UraPitchBendRibon(midiDevice.createUraReceiver(receiver, 0)).width(PITCH_B_WIDTH).height(PITCH_B_HEIGHT);
+        pitchBandRibon.getStyleClass().add(String.class.cast(UraApplicationUtils.APP_RESOURCE
+                .getResourceMap("pitchBendArea").get("css")));
+
+        this.initLayout(notes);
         this.setOnTouchMoved(touchEvent -> {
             onTouchMovedListen(touchEvent, this);
         });
@@ -98,6 +109,11 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
     protected void initLayout(final Notes notes) {
         for (final Node childNode : this.getChildren()) {
             if ("KeyArea".equals(childNode.getId())) {
+                for (final Node keyAreaChild : ((HBox) childNode).getChildren()) {
+                    if ("optionArea".equals(keyAreaChild.getId())) {
+                        ((VBox) keyAreaChild).getChildren().add(pitchBandRibon);
+                    }
+                }
                 ((HBox) childNode).getChildren().add(notes);
                 LOG.log("TRC note point(x:{}, y:{})", notes.getLayoutX(), notes.getLayoutY());
             }
@@ -127,6 +143,11 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
             if (IS_URAKEYBOARD_INSTANCE) {
                 // 鍵オブジェクト上であれば、鍵用Movedイベントリスナを実行
                 this.touchMovedKeyboardListen(touchEvent, UraKeyboard.class.cast(targetNode));
+            } else if (UraPitchBendRibon.class.isInstance(targetNode)) {
+                final UraPitchBendRibon pitchBend = UraPitchBendRibon.class.cast(targetNode);
+                final TouchPoint tp = touchEvent.getTouchPoint();
+                LOG.log("DBG Moved PitchBend touch=[{}]({})", tp.getId(), tp);
+                pitchBend.bendModule(tp);
             }
 
             if (!IS_URAKEYBOARD_INSTANCE && noteOnKeyCacheMap.size() > 0) {
@@ -163,6 +184,11 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
             if (UraKeyboard.class.isInstance(targetNode)) {
                 // 鍵オブジェクト上であれば、鍵用Releasedイベントリスナを実行
                 this.touchReleasedKeyboardListen(touchEvent, UraKeyboard.class.cast(targetNode));
+            } else if (UraPitchBendRibon.class.isInstance(targetNode)) {
+                final UraPitchBendRibon pitchBend = UraPitchBendRibon.class.cast(targetNode);
+                final TouchPoint tp = touchEvent.getTouchPoint();
+                LOG.log("DBG Released PitchBend Clear touch=[{}]({})", tp.getId(), tp);
+                pitchBend.bendModuleClear();
             }
             // 全てのキャッシュがなくなった場合のみ、全キーを検索し直し、音を止める。
             this.resetKeyboardNotes(touchEvent);
@@ -190,6 +216,11 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
             if (UraKeyboard.class.isInstance(targetNode)) {
                 // 鍵オブジェクト上であれば、鍵用Pressedイベントリスナを実行
                 this.touchPressedKeyboardListen(touchEvent, UraKeyboard.class.cast(targetNode));
+            } else if (UraPitchBendRibon.class.isInstance(targetNode)) {
+                final UraPitchBendRibon pitchBend = UraPitchBendRibon.class.cast(targetNode);
+                final TouchPoint tp = touchEvent.getTouchPoint();
+                LOG.log("DBG Pressed PitchBend touch=[{}]({})", tp.getId(), tp);
+                pitchBend.bendModule(tp);
             }
         } finally {
             touchEvent.consume();
