@@ -1,14 +1,15 @@
 apply plugin: 'java'
+apply plugin: 'maven'
 apply plugin: 'eclipse'
 
+def defaultEncoding = 'UTF-8'
+[compileJava, compileTestJava, javadoc]*.options*.encoding = defaultEncoding
+
 sourceCompatibility = 1.8
-version = '1.0'
-jar {
-    manifest {
-        attributes 'Implementation-Title': 'Midi Keyboard',
-                   'Implementation-Version': version
-    }
-}
+sourceCompatibility = 1.8
+group = 'org.u-board'
+archivesBaseName = 'u-board'
+version = '0.3.0'
 
 dependencies {
     //compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
@@ -35,10 +36,66 @@ test {
     systemProperties 'property': 'value'
 }
 
+// maven ローカルリポジトリのパス
+ext {
+    mavenRepository = "${buildDir}/maven"
+    mainClassName = 'org.urakeyboard.application.UraKeyboardApplication'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class' : mainClassName,
+                   'Implementation-Title': 'U-BOARD(Midi Keyboard EMULATOR)',
+                   'Implementation-Version': version
+    }
+}
+
 uploadArchives {
     repositories {
-       flatDir {
-           dirs 'repos'
-       }
+        mavenDeployer {
+            repository(url: "file:${mavenRepository}")
+        }
+    }
+}
+
+[install.repositories.mavenInstaller, uploadArchives.repositories.mavenDeployer]*.pom*.whenConfigured { pom ->
+    pom.project {
+        inceptionYear '2015'
+        packaging 'jar'
+        licenses {
+            license {
+                name 'The Apache Software License, Version 2.0'
+                url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                distribution 'repo'
+            }
+        }
+    }
+}
+
+task uploadArchivesAll(dependsOn: 'uploadArchives') << {
+}
+
+task jarAll(dependsOn: 'jar') << {
+}
+
+gradle.taskGraph.whenReady {taskGraph ->
+    if (taskGraph.hasTask(uploadArchivesAll)) {
+        jar {
+            println 'We uploadArchivesAll now'
+            from configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+        }
+        uploadArchives.doFirst {
+            repositories {
+                mavenDeployer {
+                    repository(url: "file:${buildDir}/mavenIncludeAll")
+                }
+            }
+        }
+    }
+    if (taskGraph.hasTask(jarAll)) {
+        jar {
+            println 'We jarAll now'
+            from configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+        }
     }
 }

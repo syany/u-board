@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.Label?>
 
 <fx:root
   type="javafx.scene.layout.AnchorPane"
-  prefWidth="1240.0" prefHeight="350.0"
+  prefWidth="1240.0" prefHeight="400.0"
   style="-fx-background-color: #cff;"
   xmlns:fx="http://javafx.com/fxml">
   <children>
+
+    <Label id="commentabel"
+      text="Controller Slide"
+      prefWidth="920.0"
+    />
   </children>
 </fx:root>

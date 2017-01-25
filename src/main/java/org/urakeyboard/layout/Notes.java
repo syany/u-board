@@ -76,6 +76,9 @@ public class Notes extends AnchorPane {
         final double WHITE_KEY_HEIGHT = Double.class.cast(UraApplicationUtils.APP_RESOURCE.getResourceMap("whiteKey").get("height"));
         final double BLACK_KEY_HEIGHT = Double.class.cast(UraApplicationUtils.APP_RESOURCE.getResourceMap("blackKey").get("height"));
 
+        final double WHITE_KEY_Y = Double.class.cast(UraApplicationUtils.APP_RESOURCE.getResourceMap("whiteKey").get("y"));
+        final double BLACK_KEY_Y = Double.class.cast(UraApplicationUtils.APP_RESOURCE.getResourceMap("blackKey").get("y"));
+
         // 指定の音階分キーボードを作成
         for (int note = FIRST_NOTE, wIdx = 0; note < END_NOTE; note++) {
             final UraReceiver uraReceiver = midiDevice.createUraReceiver(receiver, 0);
@@ -83,12 +86,12 @@ public class Notes extends AnchorPane {
                 final double w = (wIdx - 1) * WHITE_KEY_WIDTH;
                 final double x = (w + WHITE_KEY_WIDTH / 2) + BLACK_KEY_OFFSET;
                 UraBlackKey blackKey = new UraBlackKey(uraReceiver)
-                .x(x).y(0).width(BLACK_KEY_WIDTH).height(BLACK_KEY_HEIGHT).note(note);
+                .x(x).y(BLACK_KEY_Y).width(BLACK_KEY_WIDTH).height(BLACK_KEY_HEIGHT).note(note);
                 blackKeyList.add(blackKey);
             } else {
                 final double x = wIdx * WHITE_KEY_WIDTH;
                 final UraWhiteKey whiteKey = new UraWhiteKey(uraReceiver)
-                    .x(x).y(0).width(WHITE_KEY_WIDTH).height(WHITE_KEY_HEIGHT).note(note);
+                    .x(x).y(WHITE_KEY_Y).width(WHITE_KEY_WIDTH).height(WHITE_KEY_HEIGHT).note(note);
                 whiteKeyList.add(whiteKey);
                 wIdx++;
             }
