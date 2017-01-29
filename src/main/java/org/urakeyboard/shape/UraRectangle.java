@@ -30,7 +30,7 @@ import javafx.scene.shape.Rectangle;
  * @since 2016/12/12
  * @author syany
  */
-public class UraRectangle extends Rectangle {
+public class UraRectangle extends Rectangle implements Cloneable {
 
     /**
      *
@@ -112,5 +112,21 @@ public class UraRectangle extends Rectangle {
     public UraRectangle styleClassClear() {
         this.getStyleClass().clear();
         return this;
+    }
+    /**
+     * このオブジェクトのクローン(Shallow copy)を作成し、返却します。
+     *
+     * @return シャローコピーをした自オブジェクト
+     *  (非 Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public UraRectangle clone() {
+        try {
+            return (UraRectangle) super.clone();
+        } catch (CloneNotSupportedException e) {
+            // * 必ず入らない例外
+            throw new AssertionError();
+        }
     }
 }

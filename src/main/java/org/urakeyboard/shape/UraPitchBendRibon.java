@@ -75,13 +75,6 @@ public class UraPitchBendRibon extends UraRectangle {
         this.touching = touching;
         return this;
     }
-//    /**
-//     * @param uraReceiver uraReceiver  を設定します
-//     */
-//    public UraPitchBendRibon uraReceiver(UraReceiver uraReceiver) {
-//        this.uraReceiver = uraReceiver;
-//        return this;
-//    }
     /**
      * @param currentTouchPoint currentTouchPoint  を設定します
      */
@@ -163,9 +156,16 @@ public class UraPitchBendRibon extends UraRectangle {
                 this.sceneY() <= y && (this.sceneY() + this.getHeight()) > y;
     }
     /**
+     * @param source
+     * @return
+     */
+    public synchronized UraPitchBendRibon setXY(UraPitchBendRibon source) {
+        return this.x(source.x()).y(source.y());
+    }
+    /**
      * @param sourceTouchPoint
      */
-    public void bendModule(final TouchPoint sourceTouchPoint) {
+    public synchronized void bendModule(final TouchPoint sourceTouchPoint) {
         if (currentTouchPoint == null) {
             this.currentTouchPoint = sourceTouchPoint;
             LOG.log("DBG bendModule init add TouchPoint={}", this.currentTouchPoint);
@@ -175,7 +175,8 @@ public class UraPitchBendRibon extends UraRectangle {
         LOG.log("DBG bendModule pitchBend diff=[{}], cTouch Y={}, sTouch Y={}",
                 yDiff, currentTouchPoint.getY(), sourceTouchPoint.getY());
         uraReceiver.pitchBend(yDiff);
-        int xDiff = (int) Math.abs(currentTouchPoint.getX() - sourceTouchPoint.getX());
+
+        int xDiff = (int) Math.abs((currentTouchPoint.getX() - sourceTouchPoint.getX()));
         LOG.log("DBG bendModule modulation diff=[{}], cTouch X={}, sTouch X={}",
                 xDiff, currentTouchPoint.getX(), sourceTouchPoint.getX());
         uraReceiver.modulation(xDiff);
@@ -183,10 +184,17 @@ public class UraPitchBendRibon extends UraRectangle {
     /**
      *
      */
-    public void bendModuleClear() {
+    public synchronized void clearbendModule() {
         LOG.log("DBG bendModule clear TouchPoint={}", this.currentTouchPoint);
         this.currentTouchPoint = null;
         uraReceiver.pitchBend(0);
         uraReceiver.modulation(0);
+    }
+    /* (非 Javadoc)
+     * @see org.urakeyboard.shape.UraRectangle#clone()
+     */
+    @Override
+    public UraPitchBendRibon clone() {
+        return (UraPitchBendRibon) super.clone();
     }
 }
