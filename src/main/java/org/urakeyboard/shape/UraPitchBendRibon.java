@@ -174,12 +174,14 @@ public class UraPitchBendRibon extends UraRectangle {
         int yDiff = (int)(currentTouchPoint.getY() - sourceTouchPoint.getY());
         LOG.log("DBG bendModule pitchBend diff=[{}], cTouch Y={}, sTouch Y={}",
                 yDiff, currentTouchPoint.getY(), sourceTouchPoint.getY());
-        uraReceiver.pitchBend(yDiff);
+//        uraReceiver.pitchBend(yDiff);
+        uraReceiver.pitchBendAll(yDiff);
 
         int xDiff = (int) Math.abs((currentTouchPoint.getX() - sourceTouchPoint.getX()));
         LOG.log("DBG bendModule modulation diff=[{}], cTouch X={}, sTouch X={}",
                 xDiff, currentTouchPoint.getX(), sourceTouchPoint.getX());
-        uraReceiver.modulation(xDiff);
+//        uraReceiver.modulation(xDiff);
+        uraReceiver.modulationAll(xDiff);
     }
     /**
      *
@@ -187,8 +189,10 @@ public class UraPitchBendRibon extends UraRectangle {
     public synchronized void clearbendModule() {
         LOG.log("DBG bendModule clear TouchPoint={}", this.currentTouchPoint);
         this.currentTouchPoint = null;
-        uraReceiver.pitchBend(0);
-        uraReceiver.modulation(0);
+//        uraReceiver.pitchBend(0);
+//        uraReceiver.modulation(0);
+        uraReceiver.pitchBendAll(0);
+        uraReceiver.modulationAll(0);
     }
     /* (非 Javadoc)
      * @see org.urakeyboard.shape.UraRectangle#clone()

@@ -29,12 +29,15 @@ import javafx.scene.layout.AnchorPane;
 import javax.sound.midi.Receiver;
 
 import org.urakeyboard.shape.UraBlackKey;
+import org.urakeyboard.shape.UraKeyboard;
 import org.urakeyboard.shape.UraWhiteKey;
 import org.urakeyboard.sound.UraMidiDevice;
 import org.urakeyboard.sound.UraReceiver;
 import org.urakeyboard.util.UraApplicationUtils;
 import org.urakeyboard.util.UraKeyboardUtils;
 import org.urakeyboard.util.UraLayoutUtils;
+import org.uranoplums.typical.log.UraLoggerFactory;
+import org.uranoplums.typical.log.UraStringCodeLog;
 
 
 /**
@@ -44,10 +47,18 @@ import org.urakeyboard.util.UraLayoutUtils;
  * @author syany
  */
 public class Notes extends AnchorPane {
+    /**  */
+    protected static final UraStringCodeLog LOG = UraLoggerFactory.getUraStringCodeLog();
+    /** 最左鍵音階 */
+    protected int firstNote;
+    /** 鍵数 */
+    protected int noteCount;
     /** 白鍵リスト */
-    protected final List<UraWhiteKey> whiteKeyList = newArrayList();
+    protected final List<UraWhiteKey> whiteKeyList;
     /** 黒鍵リスト */
-    protected final List<UraBlackKey> blackKeyList = newArrayList();
+    protected final List<UraBlackKey> blackKeyList;
+    /** 鍵リスト */
+    protected final List<UraKeyboard> keyList;
     /**
      * コンストラクタ。
      * @param scene シーン
@@ -59,6 +70,11 @@ public class Notes extends AnchorPane {
             scene = new Scene(this);
         }
         UraLayoutUtils.layoutLoad(this, scene);
+        firstNote = Integer.valueOf(UraApplicationUtils.APP_RESOURCE.getResourceString("firstNote"));
+        noteCount = Integer.valueOf(UraApplicationUtils.APP_RESOURCE.getResourceString("noteCount"));
+        whiteKeyList = newArrayList((noteCount * 8) / 13);
+        blackKeyList = newArrayList((noteCount * 5) / 13);
+        keyList = newArrayList(noteCount);
         init(midiDevice, receiver);
     }
     /**
@@ -67,9 +83,12 @@ public class Notes extends AnchorPane {
      * @param receiver
      */
     public void init(final UraMidiDevice midiDevice, final Receiver receiver) {
-        final int FIRST_NOTE = Integer.valueOf(UraApplicationUtils.APP_RESOURCE.getResourceString("firstNote"));
-        final int FIRST_COUNT = Integer.valueOf(UraApplicationUtils.APP_RESOURCE.getResourceString("noteCount"));
-        final int END_NOTE = FIRST_NOTE + FIRST_COUNT;
+//        final int FIRST_NOTE = Integer.valueOf(UraApplicationUtils.APP_RESOURCE.getResourceString("firstNote"));
+//        final int FIRST_COUNT = Integer.valueOf(UraApplicationUtils.APP_RESOURCE.getResourceString("noteCount"));
+        if (UraKeyboardUtils.isBlack(this.firstNote)) {
+            LOG.log("WRN first keys note[{}] is black key.", firstNote);
+        }
+        final int END_NOTE = firstNote + noteCount;
         final double WHITE_KEY_WIDTH = Double.class.cast(UraApplicationUtils.APP_RESOURCE.getResourceMap("whiteKey").get("width"));
         final double BLACK_KEY_WIDTH = Double.class.cast(UraApplicationUtils.APP_RESOURCE.getResourceMap("blackKey").get("width"));
         final double BLACK_KEY_OFFSET = (WHITE_KEY_WIDTH - BLACK_KEY_WIDTH) / 2;
@@ -80,7 +99,7 @@ public class Notes extends AnchorPane {
         final double BLACK_KEY_Y = Double.class.cast(UraApplicationUtils.APP_RESOURCE.getResourceMap("blackKey").get("y"));
 
         // 指定の音階分キーボードを作成
-        for (int note = FIRST_NOTE, wIdx = 0; note < END_NOTE; note++) {
+        for (int note = firstNote, wIdx = 0; note < END_NOTE; note++) {
             final UraReceiver uraReceiver = midiDevice.createUraReceiver(receiver, 0);
             if (UraKeyboardUtils.isBlack(note)) {
                 final double w = (wIdx - 1) * WHITE_KEY_WIDTH;
@@ -88,11 +107,13 @@ public class Notes extends AnchorPane {
                 UraBlackKey blackKey = new UraBlackKey(uraReceiver)
                 .x(x).y(BLACK_KEY_Y).width(BLACK_KEY_WIDTH).height(BLACK_KEY_HEIGHT).note(note);
                 blackKeyList.add(blackKey);
+                keyList.add(blackKey);
             } else {
                 final double x = wIdx * WHITE_KEY_WIDTH;
                 final UraWhiteKey whiteKey = new UraWhiteKey(uraReceiver)
                     .x(x).y(WHITE_KEY_Y).width(WHITE_KEY_WIDTH).height(WHITE_KEY_HEIGHT).note(note);
                 whiteKeyList.add(whiteKey);
+                keyList.add(whiteKey);
                 wIdx++;
             }
         }
@@ -120,5 +141,12 @@ public class Notes extends AnchorPane {
      */
     public final List<UraBlackKey> getBlackKeyList() {
         return blackKeyList;
+    }
+
+    /**
+     * @return keyList を返却します
+     */
+    public final List<UraKeyboard> getKeyList() {
+        return keyList;
     }
 }

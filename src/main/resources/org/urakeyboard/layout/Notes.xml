@@ -8,7 +8,6 @@
   style="-fx-background-color: #cff;"
   xmlns:fx="http://javafx.com/fxml">
   <children>
-
     <Label id="commentabel"
       text="Controller Slide"
       prefWidth="920.0"

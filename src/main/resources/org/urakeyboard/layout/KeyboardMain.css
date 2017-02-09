@@ -44,6 +44,20 @@
     -fx-fill: linear-gradient(from 0% 0% to 100% 100%, #4375a8, #244386 98%);
 }
 
+.comLabel {
+	-fx-font-size: 12pt;
+    -fx-alignment: center;
+    -fx-font-weigh: bold;
+}
+
+.titleLabel {
+    -fx-text-fill: #333333;
+    -fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );
+    -fx-font-size: 14pt;
+    -fx-alignment: center-right;
+    -fx-font-weigh: bold;
+}
+
 AnchorPane {
     -fx-background-color: #999;
 }

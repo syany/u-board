@@ -99,6 +99,7 @@ public class UraMidiDevice extends UraSerialDataObject {
             for (int idx = 0; idx < DEFAULT_CHANRL_NUMBER && idx < defaultProgramList.size(); idx++) {
                 int program = Integer.valueOf(defaultProgramList.get(idx));
                 final NoteProgram noteProgram = new NoteProgram(idx, program);
+                LOG.log("DBG IDX[{}], default[{}]", idx, program);
                 noteProgramList.add(noteProgram);
             }
         } else {
@@ -106,6 +107,9 @@ public class UraMidiDevice extends UraSerialDataObject {
                 final NoteProgram noteProgram = new NoteProgram(idx, defaultProgram);
                 noteProgramList.add(noteProgram);
             }
+        }
+        for (final NoteProgram np : this.noteProgramList) {
+            LOG.log("DBG SET Chanel[{}]default[{}]", np.getChanel(), np.getProgram());
         }
     }
     /**
@@ -117,8 +121,13 @@ public class UraMidiDevice extends UraSerialDataObject {
         for (final MidiDevice.Info deviceInfo: MidiSystem.getMidiDeviceInfo()) {
             try {
                 final MidiDevice midiDevice = MidiSystem.getMidiDevice(deviceInfo);
+                LOG.log("DBG MidiSystem.getMidiDevice [{}] ({}), vendor={}", midiDevice.getDeviceInfo().getName()
+                        ,midiDevice.getDeviceInfo().getDescription(), midiDevice.getDeviceInfo().getVendor());
+
                 if (midiDevice instanceof Synthesizer) {
                     synthesizerList.add(midiDevice);
+//                    Synthesizer syn = Synthesizer.class.cast(midiDevice);
+//                    syn.getDeviceInfo().getName();
                 }
                 if (midiDevice instanceof Sequencer) {
                     sequencerList.add(midiDevice);
@@ -133,6 +142,20 @@ public class UraMidiDevice extends UraSerialDataObject {
 //                }
             } catch (MidiUnavailableException e) {
                 LOG.log("ERR 存在しないMIDIデバイスを選択しました。", e);
+            }
+        }
+        if (LOG.isDebugEnabled()) {
+            int idx = 0;
+            for (final MidiDevice synthesizer : synthesizerList) {
+                LOG.log("DBG SynthesizerList [{}] {} ({}), vendor={}", idx, synthesizer.getDeviceInfo().getName()
+                        ,synthesizer.getDeviceInfo().getDescription(), synthesizer.getDeviceInfo().getVendor());
+                idx++;
+            }
+            idx = 0;
+            for (final MidiDevice sequencer : sequencerList) {
+                LOG.log("DBG SequencerList [{}] {} ({}), vendor={}", idx, sequencer.getDeviceInfo().getName()
+                        ,sequencer.getDeviceInfo().getDescription(), sequencer.getDeviceInfo().getVendor());
+                idx++;
             }
         }
     }
@@ -210,16 +233,20 @@ public class UraMidiDevice extends UraSerialDataObject {
         if (this.defaultSequencer == null) {
             return null;
         }
+        return openReciver();
+    }
+    /**
+     * @return
+     */
+    public Receiver openReciver() {
         try {
             Transmitter transmitter = this.defaultSequencer.getTransmitter();
-//            if (this.synthesizerList.size() > 0) {
-//                this.defaultSynthesizer = this.synthesizerList.get(synthesizerIdx);
-//            }
-//            if (this.defaultSynthesizer == null) {
-//                this.defaultSynthesizer = MidiSystem.getSynthesizer();
-//            }
             Receiver receiver = this.defaultSynthesizer.getReceiver();
+            LOG.log("DBG Open Receiver Synthesizer={}, Sequencer={}, Transmitter={}, Receiver={}",
+                    this.defaultSynthesizer, this.defaultSequencer,
+                    transmitter, receiver);
             if (!this.defaultSynthesizer.isOpen()) {
+                LOG.log("DBG Open Receiver");
                 this.defaultSynthesizer.open();
             }
             transmitter.setReceiver(receiver);
@@ -245,7 +272,55 @@ public class UraMidiDevice extends UraSerialDataObject {
     public UraReceiver createUraReceiver(final Receiver receiver, final int chanelIndex) {
         final NoteProgram noteProgram = this.noteProgramList.get(chanelIndex);
         UraReceiver uraReceiver = new UraReceiver(receiver, noteProgram);
-        uraReceiver.changeProgram();
+        uraReceiver.setChanelNumber(this.noteProgramList.size());
         return uraReceiver;
+    }
+
+    /**
+     * @return synthesizerList を返却します
+     */
+    public final List<MidiDevice> getSynthesizerList() {
+        return synthesizerList;
+    }
+
+    /**
+     * @return sequencerList を返却します
+     */
+    public final List<MidiDevice> getSequencerList() {
+        return sequencerList;
+    }
+
+    /**
+     * @param defaultSynthesizer defaultSynthesizer  を設定します
+     */
+    public final void setDefaultSynthesizer(MidiDevice defaultSynthesizer) {
+        this.defaultSynthesizer = defaultSynthesizer;
+    }
+
+    /**
+     * @param defaultSequencer defaultSequencer  を設定します
+     */
+    public final void setDefaultSequencer(MidiDevice defaultSequencer) {
+        this.defaultSequencer = defaultSequencer;
+    }
+
+    /**
+     * @return defaultSynthesizer を返却します
+     */
+    public final MidiDevice getDefaultSynthesizer() {
+        return defaultSynthesizer;
+    }
+
+    /**
+     * @return defaultSequencer を返却します
+     */
+    public final MidiDevice getDefaultSequencer() {
+        return defaultSequencer;
+    }
+    public final NoteProgram getNoteProgram(int chanelIndex) {
+        for (final NoteProgram np : this.noteProgramList) {
+            LOG.log("DBG SET Chanel[{}]default[{}]", np.getChanel(), np.getProgram());
+        }
+        return this.noteProgramList.get(chanelIndex);
     }
 }

@@ -1,11 +1,14 @@
 {
   // 楽器
-  synthesizerIdx: "-1",
+  synthesizerIdx: "0",
   sequencerIdx: "0",
   defaultProgram: "80",
   defaultProgramList: [
                        "80",
-                       "80"
+                       "79",
+                       "0",
+                       "23",
+                       "43"
                        ],
   defaultChanelNumber: "12",
   firstNote: "57",
