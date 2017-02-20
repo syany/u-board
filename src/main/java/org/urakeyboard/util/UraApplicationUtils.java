@@ -30,6 +30,7 @@ import org.uranoplums.typical.util.UraUtils;
 public final class UraApplicationUtils extends UraUtils {
 
     public static final UraJSONResource APP_RESOURCE = new UraJSONResource(UraApplicationUtils.class.getPackage().getName() + ".application");
+    public static final UraJSONResource MESSAGE = new UraJSONResource(UraApplicationUtils.class.getPackage().getName() + ".message");
     /**
      *
      */

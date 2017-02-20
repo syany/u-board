@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Spinner?>
+
+<fx:root
+  type="javafx.scene.layout.HBox"
+  style="-fx-background-color: #ccc;"
+  xmlns:fx="http://javafx.com/fxml">
+  <children>
+    <Label styleClass="comLabel" text=" " />
+    <Label fx:id="chanelNumLabel" styleClass="comLabel" text="Chanel 1:" />
+    <ComboBox fx:id="programSelect" onAction="#programSelectAction"></ComboBox>
+    <Spinner fx:id="programSpinner" maxWidth="75.0" min="1" max="127" initialValue="1" amountToStepBy="1" editable="true" />
+  </children>
+</fx:root>

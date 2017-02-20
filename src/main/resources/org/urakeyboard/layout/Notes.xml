@@ -7,10 +7,10 @@
   prefWidth="1240.0" prefHeight="400.0"
   style="-fx-background-color: #cff;"
   xmlns:fx="http://javafx.com/fxml">
-  <children>
+  <children><!--
     <Label id="commentabel"
       text="Controller Slide"
       prefWidth="920.0"
-    />
+    /> -->
   </children>
 </fx:root>

@@ -17,13 +17,16 @@
       <children>
         <Label id="SynthesizerLabel" styleClass="comLabel" text="出力:" />
         <ComboBox id="SynthesizerSelect"></ComboBox>
+        <Label styleClass="comLabel" text=" " />
         <Label id="SequencerLabel" styleClass="comLabel" text="入力:" />
         <ComboBox id="SequencerSelect"></ComboBox>
+        <Label styleClass="comLabel" text=" " />
         <Button id="deviceButton">デバイス設定</Button>
+        <Label styleClass="comLabel" text=" " />
         <Button id="keySetButton">キー設定</Button>
         <Label id="commentabel" styleClass="titleLabel"
           text="U-BOARD 1"
-          prefWidth="1125.0"
+          prefWidth="1110.0"
         />
       </children>
     </HBox>

@@ -5,12 +5,23 @@
   defaultProgram: "80",
   defaultProgramList: [
                        "80",
-                       "79",
                        "0",
+                       "12",
                        "23",
-                       "43"
+                       "36",
+                       "43",
+                       "50",
+                       "67",
+                       "75",
+                       "127",
+                       "82",
+                       "90",
+                       "101",
+                       "110",
+                       "120",
+                       "10"
                        ],
-  defaultChanelNumber: "12",
+  defaultChanelNumber: "16",
   firstNote: "57",
   noteCount: "28",
   blackKey: {

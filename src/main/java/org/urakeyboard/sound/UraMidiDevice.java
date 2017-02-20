@@ -323,4 +323,11 @@ public class UraMidiDevice extends UraSerialDataObject {
         }
         return this.noteProgramList.get(chanelIndex);
     }
+
+    /**
+     * @return noteProgramList を返却します
+     */
+    public final List<NoteProgram> getNoteProgramList() {
+        return noteProgramList;
+    }
 }

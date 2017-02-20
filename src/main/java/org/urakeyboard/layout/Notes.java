@@ -24,6 +24,7 @@ import java.util.List;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 
 import javax.sound.midi.Receiver;
@@ -59,6 +60,8 @@ public class Notes extends AnchorPane {
     protected final List<UraBlackKey> blackKeyList;
     /** 鍵リスト */
     protected final List<UraKeyboard> keyList;
+    /** 鍵ラベルリスト */
+    protected final List<Label> keyLabelList;
     /**
      * コンストラクタ。
      * @param scene シーン
@@ -75,6 +78,7 @@ public class Notes extends AnchorPane {
         whiteKeyList = newArrayList((noteCount * 8) / 13);
         blackKeyList = newArrayList((noteCount * 5) / 13);
         keyList = newArrayList(noteCount);
+        keyLabelList = newArrayList(noteCount);
         init(midiDevice, receiver);
     }
     /**
@@ -118,8 +122,26 @@ public class Notes extends AnchorPane {
             }
         }
 
-        // 鍵群レイアウトに追加する
         ObservableList<Node> nodes = this.getChildren();
+
+        UraKeyboard currenyKey = null;
+        for (int idx = 0; idx < keyList.size(); idx++) {
+            final boolean preBlack = (currenyKey != null && currenyKey.isBlackKey());
+
+            final Label keyLabel = new Label();
+            if (preBlack) {
+                double preWidth = currenyKey.getWidth() / 2;
+                currenyKey = keyList.get(idx);
+                keyLabel.setLayoutX(currenyKey.x()+preWidth);
+                keyLabel.setText(String.valueOf(currenyKey.uraReceiver().getChanel()));
+            } else {
+                currenyKey = keyList.get(idx);
+                keyLabel.setLayoutX(currenyKey.x());
+                keyLabel.setText(String.valueOf(currenyKey.uraReceiver().getChanel()));
+            }
+            nodes.add(keyLabel);
+        }
+        // 鍵群レイアウトに追加する
         for (final UraWhiteKey wKey : whiteKeyList) {
             nodes.add(wKey);
         }

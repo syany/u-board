@@ -204,4 +204,7 @@ public class UraReceiver extends UraSerialDataObject {
     public final void setChanelNumber(int chanelNumber) {
         this.chanelNumber = chanelNumber;
     }
+    public final int getChanel() {
+        return this.noteProgram.getChanel();
+    }
 }

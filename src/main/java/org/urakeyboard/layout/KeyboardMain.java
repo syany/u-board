@@ -44,6 +44,7 @@ import org.urakeyboard.shape.UraOnTouchPressedListener;
 import org.urakeyboard.shape.UraOnTouchReleasedListener;
 import org.urakeyboard.shape.UraPitchBendRibon;
 import org.urakeyboard.sound.UraMidiDevice;
+import org.urakeyboard.sound.UraReceiver;
 import org.urakeyboard.util.UraApplicationUtils;
 import org.urakeyboard.util.UraLayoutUtils;
 import org.uranoplums.typical.collection.factory.UraMapFactory.FACTOR;
@@ -77,6 +78,7 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
     protected final ConcurrentMap<Integer, UraKeyboard> noteOnKeyCacheMap = newConcurrentHashMap(10, FACTOR.NONE);
     /** 押下中ピッチベンドリボンコントローラタッチID */
     protected int currentOnPitchBendTouchId = -1;
+    protected final UraReceiver commonUraReceiver;
 
     /**
      * コンストラクタ
@@ -96,9 +98,11 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
         final Notes notes = new Notes(scene, midiDevice, receiver);
         this.keyList = notes.getKeyList();
 
+        commonUraReceiver = midiDevice.createUraReceiver(receiver, 0);
+
         final double PITCH_B_WIDTH = Double.class.cast(UraApplicationUtils.APP_RESOURCE.getResourceMap("pitchBendArea").get("width"));
         final double PITCH_B_HEIGHT = Double.class.cast(UraApplicationUtils.APP_RESOURCE.getResourceMap("pitchBendArea").get("height"));
-        pitchBandRibon = new UraPitchBendRibon(midiDevice.createUraReceiver(receiver, 0)).width(PITCH_B_WIDTH).height(PITCH_B_HEIGHT);
+        pitchBandRibon = new UraPitchBendRibon(commonUraReceiver).width(PITCH_B_WIDTH).height(PITCH_B_HEIGHT);
         pitchBandRibon.getStyleClass().add(String.class.cast(UraApplicationUtils.APP_RESOURCE
                 .getResourceMap("pitchBendArea").get("css")));
 
@@ -246,11 +250,11 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
         this.setKeyButton = Button.class.cast(node);
         this.setKeyButton.setOnMouseClicked(mouseClicked -> {
             // 押されたら
-            new SettingDialog(null, this.midiDevice, this.keyList);
+            new SettingDialog(null, this.midiDevice, this.keyList, commonUraReceiver);
         });
         this.setKeyButton.setOnTouchPressed(touchEvent -> {
             // 押されたら
-            new SettingDialog(null, this.midiDevice, this.keyList);
+            new SettingDialog(null, this.midiDevice, this.keyList, commonUraReceiver);
         });
     }
     /**
