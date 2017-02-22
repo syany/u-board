@@ -130,16 +130,41 @@ public class Notes extends AnchorPane {
 
             final Label keyLabel = new Label();
             if (preBlack) {
-                double preWidth = currenyKey.getWidth() / 2;
+                double preWidth = BLACK_KEY_WIDTH / 2;
                 currenyKey = keyList.get(idx);
+                final int chanelNum = currenyKey.uraReceiver().getChanel() + 1;
                 keyLabel.setLayoutX(currenyKey.x()+preWidth);
-                keyLabel.setText(String.valueOf(currenyKey.uraReceiver().getChanel()));
+                keyLabel.setText(String.valueOf(chanelNum));
+                keyLabel.getStyleClass().add("keyLabel");
+                keyLabel.getStyleClass().add("labelScheme" + String.valueOf(chanelNum));
+                if ((idx + 1) < keyList.size() && keyList.get(idx + 1).isBlackKey()) {
+                    keyLabel.setMaxWidth(currenyKey.width() - BLACK_KEY_WIDTH);
+                    keyLabel.setMinWidth(currenyKey.width() - BLACK_KEY_WIDTH);
+//                    keyLabel.prefWidth(currenyKey.width() - BLACK_KEY_WIDTH);
+                } else {
+                    keyLabel.setMaxWidth(currenyKey.width() - preWidth);
+                    keyLabel.setMinWidth(currenyKey.width() - preWidth);
+//                    keyLabel.prefWidth(currenyKey.width() - preWidth);
+                }
             } else {
                 currenyKey = keyList.get(idx);
+                final int chanelNum = currenyKey.uraReceiver().getChanel() + 1;
                 keyLabel.setLayoutX(currenyKey.x());
-                keyLabel.setText(String.valueOf(currenyKey.uraReceiver().getChanel()));
+                keyLabel.setText(String.valueOf(chanelNum));
+                keyLabel.getStyleClass().add("keyLabel");
+                keyLabel.getStyleClass().add("labelScheme" + String.valueOf(chanelNum));
+                if ((idx + 1) < keyList.size() && keyList.get(idx + 1).isBlackKey()) {
+                    keyLabel.setMaxWidth(currenyKey.width() - (BLACK_KEY_WIDTH / 2));
+                    keyLabel.setMinWidth(currenyKey.width() - (BLACK_KEY_WIDTH / 2));
+//                    keyLabel.prefWidth(currenyKey.width() - (BLACK_KEY_WIDTH / 2));
+                } else {
+                    keyLabel.setMaxWidth(currenyKey.width());
+                    keyLabel.setMinWidth(currenyKey.width());
+//                    keyLabel.prefWidth(currenyKey.width());
+                }
             }
             nodes.add(keyLabel);
+            currenyKey.chanelLabel(keyLabel);
         }
         // 鍵群レイアウトに追加する
         for (final UraWhiteKey wKey : whiteKeyList) {
@@ -170,5 +195,12 @@ public class Notes extends AnchorPane {
      */
     public final List<UraKeyboard> getKeyList() {
         return keyList;
+    }
+
+    /**
+     * @return keyLabelList を返却します
+     */
+    public final List<Label> getKeyLabelList() {
+        return keyLabelList;
     }
 }

@@ -58,6 +58,75 @@
     -fx-font-weigh: bold;
 }
 
+.keyLabel {
+	-fx-font-size: 11pt;
+    -fx-alignment: center;
+    -fx-font-weigh: bold;
+}
+
+.labelScheme1 {
+    -fx-background-color: #fff;
+}
+
+.labelScheme2 {
+    -fx-background-color: #ccc;
+}
+
+.labelScheme3 {
+    -fx-background-color: #0cc;
+}
+
+.labelScheme4 {
+    -fx-background-color: #c0c;
+}
+
+.labelScheme5 {
+    -fx-background-color: #cc0;
+}
+
+.labelScheme6 {
+    -fx-background-color: #00c;
+}
+
+.labelScheme7 {
+    -fx-background-color: #c00;
+}
+
+.labelScheme8 {
+    -fx-background-color: #0c0;
+}
+
+.labelScheme9 {
+    -fx-background-color: #888;
+}
+
+.labelScheme10 {
+    -fx-background-color: #000;
+}
+
+.labelScheme11 {
+    -fx-background-color: #088;
+}
+
+.labelScheme12 {
+    -fx-background-color: #808;
+}
+
+.labelScheme13 {
+    -fx-background-color: #880;
+}
+
+.labelScheme14 {
+    -fx-background-color: #008;
+}
+
+.labelScheme15 {
+    -fx-background-color: #800;
+}
+
+.labelScheme16 {
+    -fx-background-color: #080;
+}
 AnchorPane {
     -fx-background-color: #999;
 }

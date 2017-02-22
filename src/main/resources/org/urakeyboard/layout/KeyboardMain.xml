@@ -16,23 +16,23 @@
     <HBox id="ControllArea">
       <children>
         <Label id="SynthesizerLabel" styleClass="comLabel" text="出力:" />
-        <ComboBox id="SynthesizerSelect"></ComboBox>
+        <ComboBox fx:id="synthesizerSelect" id="SynthesizerSelect"></ComboBox>
         <Label styleClass="comLabel" text=" " />
         <Label id="SequencerLabel" styleClass="comLabel" text="入力:" />
-        <ComboBox id="SequencerSelect"></ComboBox>
+        <ComboBox fx:id="sequencerSelect" id="SequencerSelect"></ComboBox>
         <Label styleClass="comLabel" text=" " />
-        <Button id="deviceButton">デバイス設定</Button>
+        <Button fx:id="deviceButton" onAction="#deviceSelectExec" id="deviceButton">デバイス設定</Button>
         <Label styleClass="comLabel" text=" " />
-        <Button id="keySetButton">キー設定</Button>
+        <Button fx:id ="keySetButton" onAction="#keySettingDialogOpen" id="keySetButton">キー設定</Button>
         <Label id="commentabel" styleClass="titleLabel"
           text="U-BOARD 1"
           prefWidth="1110.0"
         />
       </children>
     </HBox>
-    <HBox id="KeyArea">
+    <HBox fx:id="keyArea" id="KeyArea">
       <children>
-        <VBox id="optionArea"
+        <VBox fx:id="optionArea" id="optionArea"
           style="-fx-alignment:center;"
         >
           <children>

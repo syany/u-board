@@ -21,10 +21,10 @@ import static org.uranoplums.typical.collection.factory.UraMapFactory.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 
-import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -67,13 +67,21 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
     /** ピッチベンドリボンエリア */
     protected final UraPitchBendRibon pitchBandRibon;
     /** シンセプルダウン */
+    @FXML
     protected ComboBox<MidiDevice> synthesizerSelect;
     /** シーケンサプルダウン */
+    @FXML
     protected ComboBox<MidiDevice> sequencerSelect;
     /** デバイス設定ボタン */
+    @FXML
     protected Button deviceButton;
     /** キー設定 */
+    @FXML
     protected Button setKeyButton;
+    @FXML
+    protected VBox optionArea;
+    @FXML
+    protected HBox keyArea;
     /** 押下中（発音中）の鍵盤オブジェクトマップ */
     protected final ConcurrentMap<Integer, UraKeyboard> noteOnKeyCacheMap = newConcurrentHashMap(10, FACTOR.NONE);
     /** 押下中ピッチベンドリボンコントローラタッチID */
@@ -98,6 +106,9 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
         final Notes notes = new Notes(scene, midiDevice, receiver);
         this.keyList = notes.getKeyList();
 
+        initSynthesizerSelect();
+        initSequencerSelect();
+
         commonUraReceiver = midiDevice.createUraReceiver(receiver, 0);
 
         final double PITCH_B_WIDTH = Double.class.cast(UraApplicationUtils.APP_RESOURCE.getResourceMap("pitchBendArea").get("width"));
@@ -106,7 +117,9 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
         pitchBandRibon.getStyleClass().add(String.class.cast(UraApplicationUtils.APP_RESOURCE
                 .getResourceMap("pitchBendArea").get("css")));
 
-        this.initLayout(notes);
+        optionArea.getChildren().add(pitchBandRibon);
+        keyArea.getChildren().add(notes);
+
         this.setOnTouchMoved(touchEvent -> {
             onTouchMovedListen(touchEvent, this);
         });
@@ -119,42 +132,9 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
     }
 
     /**
-     * @param notes
-     */
-    protected void initLayout(final Notes notes) {
-        for (final Node childNode : this.getChildren()) {
-            if ("ControllArea".equals(childNode.getId())) {
-                for (final Node controllAreaChild : ((HBox) childNode).getChildren()) {
-                    final String id = controllAreaChild.getId();
-                    if ("SynthesizerSelect".equals(id)) {
-                        initSynthesizerSelect(controllAreaChild);
-                    } else if ("SequencerSelect".equals(id)) {
-                        initSequencerSelect(controllAreaChild);
-                    } else if ("deviceButton".equals(id)) {
-                        initDeviceButton(controllAreaChild);
-                    } else if ("keySetButton".equals(id)) {
-                        initSetKeyButton(controllAreaChild);
-                    }
-                }
-            }
-            if ("KeyArea".equals(childNode.getId())) {
-                for (final Node keyAreaChild : ((HBox) childNode).getChildren()) {
-                    if ("optionArea".equals(keyAreaChild.getId())) {
-                        ((VBox) keyAreaChild).getChildren().add(pitchBandRibon);
-                    }
-                }
-                ((HBox) childNode).getChildren().add(notes);
-                LOG.log("TRC note point(x:{}, y:{})", notes.getLayoutX(), notes.getLayoutY());
-            }
-        }
-    }
-    /**
      * シンセサイザ選択の初期化
-     * @param node
      */
-    @SuppressWarnings ("unchecked")
-    protected void initSynthesizerSelect(final Node node) {
-        this.synthesizerSelect = ComboBox.class.cast(node);
+    protected void initSynthesizerSelect() {
         this.synthesizerSelect.getItems().addAll(midiDevice.getSynthesizerList());
         this.synthesizerSelect.setValue(midiDevice.getDefaultSynthesizer());
         // ラムダ（Callback@FunctionalInterface）を使って超省略
@@ -173,26 +153,12 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
                 }
             }
         });
-//        this.synthesizerSelect.getCellFactory().call(null);
         this.synthesizerSelect.setButtonCell(this.synthesizerSelect.getCellFactory().call(null));
-        this.synthesizerSelect.valueProperty().addListener(
-                (ObservableValue<? extends MidiDevice> observable,
-                MidiDevice oldValue, MidiDevice newValue) -> {
-                    //TODO いらない
-                    LOG.log("DBG addListener Synthesizer old={}, new={}", oldValue, newValue);
-                    if (Objects.nonNull(newValue) && !oldValue.equals(newValue)) {
-                        midiDevice.setDefaultSynthesizer(newValue);
-                    }
-                }
-        );
     }
     /**
      * シーケンサー選択の初期化
-     * @param node
      */
-    @SuppressWarnings ("unchecked")
-    protected void initSequencerSelect(final Node node) {
-        this.sequencerSelect = ComboBox.class.cast(node);
+    protected void initSequencerSelect() {
         this.sequencerSelect.getItems().addAll(midiDevice.getSequencerList());
         this.sequencerSelect.setValue(midiDevice.getDefaultSequencer());
         // ラムダ（Callback@FunctionalInterface）を使って超省略
@@ -211,51 +177,28 @@ public class KeyboardMain extends VBox implements UraOnTouchMovedListener, UraOn
                 }
             }
         });
-//        this.sequencerSelect.getCellFactory().call(null);
         this.sequencerSelect.setButtonCell(this.sequencerSelect.getCellFactory().call(null));
-        this.sequencerSelect.valueProperty().addListener(
-                (ObservableValue<? extends MidiDevice> observable,
-                MidiDevice oldValue, MidiDevice newValue) -> {
-                    if (Objects.nonNull(newValue) && !oldValue.equals(newValue)) {
-                        midiDevice.setDefaultSequencer(newValue);
-                    }
-                }
-        );
     }
+
     /**
-     * 設定ボタン押下時の動作
-     * @param node
+     * @param actionEvent
      */
-    protected void initDeviceButton(final Node node) {
-        this.deviceButton = Button.class.cast(node);
+    @FXML
+    public void deviceSelectExec(ActionEvent actionEvent) {
         this.deviceButton.setOnMouseClicked(mouseClicked -> {
             final Receiver newReceiver = midiDevice.openReciver();
             for (final UraKeyboard uraKeyboard: this.keyList) {
                 uraKeyboard.uraReceiver().setReceiver(newReceiver);
             }
         });
-        this.deviceButton.setOnTouchPressed(touchEvent -> {
-            final Receiver newReceiver = midiDevice.openReciver();
-            for (final UraKeyboard uraKeyboard: this.keyList) {
-                uraKeyboard.uraReceiver().setReceiver(newReceiver);
-            }
-        });
     }
-
     /**
      * 設定ボタン押下時の動作
-     * @param node
+     * @param actionEvent
      */
-    protected void initSetKeyButton(final Node node) {
-        this.setKeyButton = Button.class.cast(node);
-        this.setKeyButton.setOnMouseClicked(mouseClicked -> {
-            // 押されたら
-            new SettingDialog(null, this.midiDevice, this.keyList, commonUraReceiver);
-        });
-        this.setKeyButton.setOnTouchPressed(touchEvent -> {
-            // 押されたら
-            new SettingDialog(null, this.midiDevice, this.keyList, commonUraReceiver);
-        });
+    @FXML
+    public void keySettingDialogOpen(ActionEvent actionEvent) {
+        new SettingDialog(null, this.midiDevice, this.keyList, commonUraReceiver);
     }
     /**
      * 対象を押下、離した際に実行されるイベントリスナ

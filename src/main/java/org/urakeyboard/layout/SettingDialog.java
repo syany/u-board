@@ -190,13 +190,20 @@ public class SettingDialog extends VBox {
     public void chanelSelectExec(ActionEvent actionEvent) {
         LOG.log("INF chanelSelectExec!! [{}]", actionEvent);
         int fromKey = this.fromSpinner.getValue() - 1;
-        int endKey = this.toSpinner.getValue() - 1;
+        int endKey = this.toSpinner.getValue();
         try {
             List<UraKeyboard> targetList = keyList.subList(fromKey, endKey);
-            int targetCanel = this.chanelSpinner.getValue() - 1;
+            int targetCanel = this.chanelSpinner.getValue();
             for (final UraKeyboard targetUraKeyboard : targetList) {
-                final NoteProgram np = this.midiDevice.getNoteProgram(targetCanel);
+                final NoteProgram np = this.midiDevice.getNoteProgram(targetCanel - 1);
                 targetUraKeyboard.uraReceiver().setNoteProgram(np);
+                final Label chanelLabel = targetUraKeyboard.chanelLabel();
+                if (chanelLabel != null) {
+                    chanelLabel.getStyleClass().clear();
+                    chanelLabel.getStyleClass().add("keyLabel");
+                    chanelLabel.getStyleClass().add("labelScheme" + String.valueOf(targetCanel));
+                    chanelLabel.setText(String.valueOf(targetCanel));
+                }
                 LOG.log("DBG CHANGE CHANEL [{}][{}][{}]", targetCanel, np.getProgram(), targetUraKeyboard);
             }
         } catch(IndexOutOfBoundsException ex) {

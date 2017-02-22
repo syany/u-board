@@ -5,12 +5,8 @@
 <fx:root
   type="javafx.scene.layout.AnchorPane"
   prefWidth="1240.0" prefHeight="400.0"
-  style="-fx-background-color: #cff;"
+  style="-fx-background-color: #ccc;"
   xmlns:fx="http://javafx.com/fxml">
-  <children><!--
-    <Label id="commentabel"
-      text="Controller Slide"
-      prefWidth="920.0"
-    /> -->
+  <children>
   </children>
 </fx:root>

@@ -44,12 +44,13 @@ public class ProgramItem extends HBox {
     protected static final UraStringCodeLog LOG = UraLoggerFactory.getUraStringCodeLog();
     @FXML
     protected Label chanelNumLabel;
+    @FXML
+    protected Label chanelListLabel;
     /** シーケンサプルダウン */
     @FXML
     protected ComboBox<String> programSelect;
     @FXML
-    protected Spinner<Integer> programSpinner;
-//    protected final List<String> programList;
+    protected Spinner<Integer> programSpinner;;
     /**
      * コンストラクタ。
      * @param scene シーン
@@ -80,6 +81,7 @@ public class ProgramItem extends HBox {
     public final ProgramItem setChanelLabel(int chanel) {
         String labelStr = String.format("CH %02d:", chanel);
         chanelNumLabel.setText(labelStr);
+        chanelListLabel.getStyleClass().add("labelScheme"+ String.valueOf(chanel));
         return this;
     }
 

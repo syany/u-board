@@ -17,6 +17,7 @@
  */
 package org.urakeyboard.shape;
 
+import javafx.scene.control.Label;
 import javafx.scene.paint.Paint;
 
 import org.urakeyboard.sound.UraReceiver;
@@ -41,6 +42,7 @@ public class UraKeyboard extends UraRectangle {
     private boolean noteOn = false;
     /** 黒鍵であればtrue */
     protected boolean blackKey = false;
+    protected Label chanelLabel = null;
 
     /**
      * @param uraReceiver チャネル、楽器情報を含めたレシーバ
@@ -77,6 +79,14 @@ public class UraKeyboard extends UraRectangle {
     public final boolean isBlackKey() {
         return blackKey;
     }
+
+    /**
+     * @return chanelLabel を返却します
+     */
+    public final Label chanelLabel() {
+        return chanelLabel;
+    }
+
     /**
      * @param uraReceiver uraReceiver  を設定します
      */
@@ -99,6 +109,13 @@ public class UraKeyboard extends UraRectangle {
     public UraKeyboard noteOn(boolean noteOn) {
         this.noteOn = noteOn;
         return this;
+    }
+
+    /**
+     * @param chanelLabel chanelLabel  を設定します
+     */
+    public final void chanelLabel(final Label chanelLabel) {
+        this.chanelLabel = chanelLabel;
     }
 
     /* (非 Javadoc)
