@@ -1,0 +1,42 @@
+{
+  // 楽器
+  synthesizerIdx: "0",
+  sequencerIdx: "0",
+  defaultProgram: "80",
+  defaultProgramList: [
+                       "85",
+                       "0",
+                       "19",
+                       "30",
+                       "40",
+                       "42",
+                       "55",
+                       "56",
+                       "64",
+                       "127",
+                       "33",
+                       "54",
+                       "73",
+                       "106",
+                       "118",
+                       "122"
+                       ],
+  defaultChanelNumber: "16",
+  firstNote: "50", // 57
+  noteCount: "39", // 28
+  blackKey: {
+    y: 24,
+    width: 40, // 50
+    height: 200
+  },
+  whiteKey: {
+    y: 24,
+    width: 60, // 80
+    height: 350
+  },
+  pitchBendArea: {
+    css: "pitchBend",
+    width: 250,
+    height: 200
+  }
+}
